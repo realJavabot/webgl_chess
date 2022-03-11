@@ -1,3 +1,6 @@
+import transformObject from "./transformObject.mjs";
+import { geos } from "./geometry.mjs"; 
+export {mesh, meshes, generateMeshBuffers, meshbuffers};
 const meshes = [];
 const meshbuffers = [];
 
@@ -11,33 +14,33 @@ class meshbuffer{
     }
  }
 
- class mesh extends transformObject{
-    constructor(geometry, x, y, z, s){
-       super(x, y, z, s);
-       this.texindex = 0;
-       this.geometry = geos[geometry];
-       this.index = 0;
-       meshes.push(this);
-    }
+class mesh extends transformObject{
+   constructor(geometry, x, y, z, s){
+      super(x, y, z, s);
+      this.texindex = 0;
+      this.geometry = geos[geometry];
+      this.index = 0;
+      meshes.push(this);
+   }
 
-    rayCollision(orig, dir){
+   rayCollision(orig, dir){
       let result = false;
       const smallestDist = 100000;
       for(const i=0; i<this.geometry.indices.length; i+=3){
          const i1 = this.geometry.indices[i]*3,
-             i2 = this.geometry.indices[i+1]*3,
-             i3 = this.geometry.indices[i+2]*3;
+               i2 = this.geometry.indices[i+1]*3,
+               i3 = this.geometry.indices[i+2]*3;
 
          let v1 = add(this.geometry.vertices.slice(i1,i1+3),this.pos),
-             v2 = add(this.geometry.vertices.slice(i2,i2+3),this.pos),
-             v3 = add(this.geometry.vertices.slice(i3,i3+3),this.pos);
-             v1[1] *= -1;
-             v2[1] *= -1;
-             v3[1] *= -1;
+               v2 = add(this.geometry.vertices.slice(i2,i2+3),this.pos),
+               v3 = add(this.geometry.vertices.slice(i3,i3+3),this.pos);
+               v1[1] *= -1;
+               v2[1] *= -1;
+               v3[1] *= -1;
 
          const n1 = this.geometry.normals.slice(i1,i1+3),
-             n2 = this.geometry.normals.slice(i2,i2+3),
-             n3 = this.geometry.normals.slice(i3,i3+3);
+               n2 = this.geometry.normals.slice(i2,i2+3),
+               n3 = this.geometry.normals.slice(i3,i3+3);
 
          // average the vertex normals for a face normal
          const normal = [ 
@@ -79,32 +82,33 @@ class meshbuffer{
          }
       }
       return result;
-    }
+   }
 
-    setTexIndex(i){
+   setTexIndex(i){
       this.texindex = i;
       this.update = true;
-    }
- }
+   }
+}
 
 function generateMeshBuffers(){
-    meshes.sort((a,b)=>{ return a.geometry.length-b.geometry.length; });
-              
-    let currentbuffer = 0;
-    meshbuffers[0] = new meshbuffer();
-    meshes.forEach(m=>{
-        let curb = meshbuffers[currentbuffer];
-        if(curb.vertices.length/3 + m.geometry.length/3 > 60000){
-            currentbuffer++;
-            curb = meshbuffers[currentbuffer] = new meshbuffer();
-        }
-        m.index = curb.vertices.length;
-        const currentLength = curb.vertices.length/3;
-        curb.vertices.push(...m.geometry.getVerts(m.transform));
-        curb.indices.push(...m.geometry.indices.map(e=>{return e+currentLength;}));
-        curb.normals.push(...m.geometry.getNormals(m.rotationMat));
-        curb.texcoors.push(...m.geometry.texcoors);
-        curb.texindexarray.push(...new Array(m.geometry.length/3).fill(m.texindex));
-        m.buffer = curb;
-    });
+   const mesh123 = meshes.sort((a,b)=>{ return a.geometry.length-b.geometry.length; });
+            
+   let currentbuffer = 0;
+   meshbuffers[0] = new meshbuffer();
+
+   meshes.forEach(m=>{
+      let curb = meshbuffers[currentbuffer];
+      if(curb.vertices.length/3 + m.geometry.length/3 > 60000){
+         currentbuffer++;
+         curb = meshbuffers[currentbuffer] = new meshbuffer();
+      }
+      m.index = curb.vertices.length;
+      const currentLength = curb.vertices.length/3;
+      curb.vertices.push(...m.geometry.getVerts(m.transform));
+      curb.indices.push(...m.geometry.indices.map(e=>{return e+currentLength;}));
+      curb.normals.push(...m.geometry.getNormals(m.rotationMat));
+      curb.texcoors.push(...m.geometry.texcoors);
+      curb.texindexarray.push(...new Array(m.geometry.length/3).fill(m.texindex));
+      m.buffer = curb;
+   });
 }

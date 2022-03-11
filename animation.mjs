@@ -1,3 +1,6 @@
+import * as vecMath from './math.mjs';
+export {tweens, Tween, Bezier, Path};
+
 let tweens = [];
 
 class Tween{
@@ -40,7 +43,7 @@ class Path{
     }
 
     at(percent){
-        return smoothInterp2D(...this.start, ...this.end, percent);
+        return vecMath.smoothInterp2D(...this.start, ...this.end, percent);
     }
 }
 
@@ -61,8 +64,8 @@ class Bezier{
     }
 
     at(percent){
-        const p1 = lerp3D(...this.points[0], ...this.points[1], percent);
-        const p2 = lerp3D(...p1, ...this.points[2], percent);
-        return( lerp3D(...p2, ...this.points[3], percent) );
+        const p1 = vecMath.lerp3D(...this.points[0], ...this.points[1], percent);
+        const p2 = vecMath.lerp3D(...p1, ...this.points[2], percent);
+        return( vecMath.lerp3D(...p2, ...this.points[3], percent) );
     }
 }

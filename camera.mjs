@@ -1,4 +1,6 @@
-class Camera extends transformObject{
+import transformObject from "./transformObject.mjs";
+
+export default class Camera extends transformObject{
     constructor(xRotation,yRotation,radius){
        super();
        this.setOrbitRotation(xRotation,yRotation);

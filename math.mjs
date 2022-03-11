@@ -1,3 +1,10 @@
+export { dot, cross, add, sub, lengthSquared, length, multScalar, 
+   project, normalize, rotateX, rotateY, rotateZ, rotateVec, 
+   translate, getTranslation, getRotation, scaleMat, multMat, isPowerOf2, 
+   get_projection, inverse_projection, lerp, smoothInterp, smoothInterp2D,
+   lerp2D, lerp3D, same2D, same3D
+};
+
 function dot(v1, v2){
    return v1[0]*v2[0] + v1[1]*v2[1] + v1[2]*v2[2];
 }

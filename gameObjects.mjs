@@ -1,3 +1,8 @@
+import { mesh } from "./mesh.mjs";
+import { geo } from "./geometry.mjs";
+import { Tween, Bezier, Path } from "./animation.mjs";
+export { piece, pieces, square, squares, spawnPieces, taken};
+
 const BOARDOFFSET = -1;
 
 const pieces = [];

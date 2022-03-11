@@ -1,3 +1,7 @@
+import {gl} from "./gameengine.mjs";
+import { isPowerOf2 } from "./math.mjs";
+export {loadTex};
+
 let numTextures = 0;
 
 function loadTex(path, uniform_name){

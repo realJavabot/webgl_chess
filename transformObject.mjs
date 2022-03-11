@@ -1,4 +1,6 @@
-class transformObject{
+import * as vecMath from './math.mjs';
+
+export default class transformObject{
     constructor(x=0, y=0, z=0, s=1){
         this.update = false;
         this.pos = [0,0,0];
@@ -24,46 +26,46 @@ class transformObject{
     }
      rotate(x,y,z){
         const mat = this.transform.slice(0,12);
-        rotateX(mat, x); rotateX(this.rotationMat, x);
-        rotateY(mat, y); rotateY(this.rotationMat, y);
-        rotateZ(mat, z); rotateZ(this.rotationMat, z);
+        vecMath.rotateX(mat, x); vecMath.rotateX(this.rotationMat, x);
+        vecMath.rotateY(mat, y); vecMath.rotateY(this.rotationMat, y);
+        vecMath.rotateZ(mat, z); vecMath.rotateZ(this.rotationMat, z);
         this.transform.splice(0,12,...mat);
         this.update = true;
      }
 
      rotateX(x){
         const mat = this.transform.slice(0,12);
-        rotateX(mat, x); rotateX(this.rotationMat, x);
+        vecMath.rotateX(mat, x); vecMath.rotateX(this.rotationMat, x);
         this.transform.splice(0,12,...mat);
         this.update = true;
      }
 
      rotateY(y){
         const mat = this.transform.slice(0,12);
-        rotateY(mat, y); rotateY(this.rotationMat, y);
+        vecMath.rotateY(mat, y); vecMath.rotateY(this.rotationMat, y);
         this.transform.splice(0,12,...mat);
         this.update = true;
      }
 
      rotateZ(z){
         const mat = this.transform.slice(0,12);
-        rotateZ(mat, z); rotateZ(this.rotationMat, z);
+        vecMath.rotateZ(mat, z); vecMath.rotateZ(this.rotationMat, z);
         this.transform.splice(0,12,...mat);
         this.update = true;
      }
 
      setRotation(x,y,z){
         const mat = [this.scaleF[0],0,0,0, 0,this.scaleF[1],0,0, 0,0,this.scaleF[2],0, 0,0,0,1];
-        rotateX(mat, x); rotateX(this.rotationMat, x);
-        rotateY(mat, y); rotateY(this.rotationMat, y);
-        rotateZ(mat, z); rotateZ(this.rotationMat, z);
+        vecMath.rotateX(mat, x); vecMath.rotateX(this.rotationMat, x);
+        vecMath.rotateY(mat, y); vecMath.rotateY(this.rotationMat, y);
+        vecMath.rotateZ(mat, z); vecMath.rotateZ(this.rotationMat, z);
         this.transform.splice(0,12,...mat.slice(0,12));
         this.update = true;
      }
      setTransform(mat){
         this.transform = mat;
-        this.pos = getTranslation(mat);
-        this.scaleF = multScalar([mat[0], mat[5], mat[10]], 3/length([1,1,1]));
+        this.pos = vecMath.getTranslation(mat);
+        this.scaleF = vecMath.multScalar([mat[0], mat[5], mat[10]], 3/vecMath.length([1,1,1]));
         this.rotationMat = [...mat.slice(0,12), 0,0,0,1];
         this.update = true;
      }
@@ -71,7 +73,7 @@ class transformObject{
         this.scaleF[0] *= x;
         this.scaleF[1] *= y;
         this.scaleF[2] *= z;
-        scaleMat(this.transform, ...this.scaleF);
+        vecMath.scaleMat(this.transform, ...this.scaleF);
         this.update = true;
      }
 }

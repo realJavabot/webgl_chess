@@ -1,3 +1,6 @@
+import * as vecMath from './math.mjs';
+export {geo, geos, loadGeometry};
+
 const geos = {};
 
 class geo{
@@ -15,7 +18,7 @@ class geo{
        const ret = [];
        for(let i=0; i<this.vertices.length; i+=3){
           const v = this.vertices.slice(i,i+3);
-          ret.push(...multMat(T,v));
+          ret.push(...vecMath.multMat(T,v));
        }
        return ret;
     }
@@ -23,7 +26,7 @@ class geo{
       const ret = [];
       for(let i=0; i<this.normals.length; i+=3){
          const v = this.normals.slice(i,i+3);
-         ret.push(...multMat(T,v));
+         ret.push(...vecMath.multMat(T,v));
       }
       return ret;
    }

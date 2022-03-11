@@ -13,16 +13,14 @@
    </head>
    <body>
       <canvas width = "800" height = "500" id = "my_Canvas"></canvas>
-      <script src="math.js"></script>
-      <script src="geometry.js"></script>
-      <script src="texture.js"></script>
-      <script src="transformObject.js"></script>
-      <script src="mesh.js"></script>
-      <script src="animation.js"></script>
-      <script src="camera.js"></script>
-      <script src="gameengine.js"></script>
-      <Script src="gameObjects.js"></Script>
-      <script>
+      <script type="module">
+         import * as vecMath from './math.mjs';
+         import { loadGeometry, geo } from "./geometry.mjs";
+         import { mesh, meshes, generateMeshBuffers } from "./mesh.mjs";
+         import { setup, update, clickMeshes, mouse } from "./gameengine.mjs";
+         import { pieces, square, squares, spawnPieces, taken } from "./gameObjects.mjs";
+         import { loadTex } from "./texture.mjs";
+
          window.onload = () =>{
             setup(() => {
                const loadCalls = [
@@ -81,7 +79,7 @@
             });
          };
 
-         canvas = document.getElementById("my_Canvas");
+         let canvas = document.getElementById("my_Canvas");
          let availableMoves = [];
 
          let colorMoves = ()=>{
@@ -96,9 +94,11 @@
                });
             })
          };
+
+         let selected;
          
          canvas.addEventListener('mouseup', (event)=>{
-            if(!dragging){
+            if(!mouse.dragging){
                const numMesh = clickMeshes(event);
 
                if(numMesh<meshes.length && numMesh>=0 && meshes[numMesh].ob){
@@ -135,21 +135,22 @@
             }
          });
 
+         let mouseOver;
          canvas.addEventListener("mousemove", (event) =>{
             if(!selected){return;}
-            if(mouse.state == states.UP){
+            if(mouse.state == mouse.states.UP){
                const meshUnderMouse = meshes[clickMeshes(event)];
-               if(!meshUnderMouse || this.mouseOver == meshUnderMouse){return;}
+               if(!meshUnderMouse || mouseOver == meshUnderMouse){return;}
 
-               this.mouseOver = meshUnderMouse;
+               mouseOver = meshUnderMouse;
 
-               const moveSquare = availableMoves.find(mov => same2D(...this.mouseOver.ob.pos, ...mov.pos));
+               const moveSquare = availableMoves.find(mov => vecMath.same2D(...mouseOver.ob.pos, ...mov.pos));
                
                colorMoves();
                
                if(moveSquare){
                   squares[moveSquare.pos[0]][moveSquare.pos[1]].mesh.setTexIndex(4);
-                  const hoverPiece = pieces.find(p => same2D(...p.pos, ...moveSquare.pos));
+                  const hoverPiece = pieces.find(p => vecMath.same2D(...p.pos, ...moveSquare.pos));
                   if(hoverPiece){
                      hoverPiece.mesh.setTexIndex(4);
                   }

@@ -1,16 +1,28 @@
-const states = {
-   UP: 0,
-   DOWN: 1
-}
-const mouse = {x:0,y:0,state:states.UP};
-const camera = new Camera(0,0.8,-15);
+import Camera from "./camera.mjs";
+import * as vecMath from './math.mjs';
+import { tweens } from './animation.mjs';
+import { meshes, meshbuffers } from "./mesh.mjs";
+
+export {setup, update, clickMeshes, rb, mouse};
+
+const mouse = {
+   states: {
+      UP: 0,
+      DOWN: 1
+   },
+   x:0,
+   y:0,
+   state: 0,
+   dragging:false
+};
+const camera = new Camera(0,1.1,-15);
 const highlightcol = [0,1,0,1];
 const hovercol = [1,0,1,1];
-let dragging = false;
 let canvas;
 let selected = 0;
 let shaderProgram;
 let fb;
+export let gl;
 
 async function setup(callback){
    createCanvas();
@@ -40,14 +52,15 @@ async function setup(callback){
 let Pmatrix;
 let Mmatrix;
 let baseColor;
+let Vmatrix;
 function setupUniforms(){
    Pmatrix = gl.getUniformLocation(shaderProgram, "Pmatrix");
    Vmatrix = gl.getUniformLocation(shaderProgram, "Vmatrix");
    Mmatrix = gl.getUniformLocation(shaderProgram, "Mmatrix");
    baseColor = gl.getUniformLocation(shaderProgram, "baseColor");
-   hoverColor = gl.getUniformLocation(shaderProgram, "hoverColor");
+   let hoverColor = gl.getUniformLocation(shaderProgram, "hoverColor");
 
-   const proj_matrix = get_projection(30, canvas.width/canvas.height, 1, 100);
+   const proj_matrix = vecMath.get_projection(30, canvas.width/canvas.height, 1, 100);
    const mov_matrix = [1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1];
 
    gl.uniformMatrix4fv(Pmatrix, false, proj_matrix);
@@ -99,6 +112,7 @@ function render() {
 }
 
 const buffers = {};
+let rb;
 function setupBuffers(){
    buffers["vertex_buffer"] = gl.createBuffer ();
    buffers["index_buffer"] = gl.createBuffer ();
@@ -143,14 +157,14 @@ function createCanvas(){
    canvas = document.getElementById('my_Canvas');
 
    canvas.addEventListener("mousedown", (e) =>{
-      mouse.state = states.DOWN;
+      mouse.state = mouse.states.DOWN;
       mouse.x = e.clientX;
       mouse.y = e.clientY;
    });
 
    canvas.addEventListener("mouseup", (e) =>{
-      mouse.state = states.UP;
-      dragging = false;
+      mouse.state = mouse.states.UP;
+      mouse.dragging = false;
    });
 
    canvas.addEventListener("wheel", (e) => {
@@ -159,12 +173,12 @@ function createCanvas(){
 
    canvas.addEventListener("mousemove", (e) =>{
       switch(mouse.state){
-         case states.UP: {
+         case mouse.states.UP: {
          }break;
-         case states.DOWN: {
-            dragging = true;
+         case mouse.states.DOWN: {
+            mouse.dragging = true;
 
-            let newRotation = add([...camera.rotation,0], multScalar([e.x - mouse.x, e.y - mouse.y, 0], 1/100));
+            let newRotation = vecMath.add([...camera.rotation,0], vecMath.multScalar([e.x - mouse.x, e.y - mouse.y, 0], 1/100));
             camera.setOrbitRotation(...newRotation);
 
             mouse.x = e.x;
