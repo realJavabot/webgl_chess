@@ -21,6 +21,7 @@ class mesh extends transformObject{
       this.geometry = geos[geometry];
       this.index = 0;
       meshes.push(this);
+      generateMeshBuffers();
    }
 
    rayCollision(orig, dir){

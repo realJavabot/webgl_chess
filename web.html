@@ -22,7 +22,7 @@
          import { loadTex } from "./texture.mjs";
 
          window.onload = () =>{
-            setup(() => {
+            setup(async () => {
                const loadCalls = [
                   loadGeometry("./models/knight.obj", "knight"),
                   loadGeometry("./models/rook.obj", "rook"),
@@ -68,6 +68,7 @@
                   planeMesh.setTexIndex(2);
 
                   spawnPieces();
+                  console.log(meshes);
                });
             }, () => {
                pieces.forEach(piece=>{piece.update();});

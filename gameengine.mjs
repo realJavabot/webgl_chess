@@ -46,8 +46,6 @@ async function setup(setupCallback, updateCallback){
    setupShaderProgram();
    setupUniforms();
    setupCallback();
-   generateMeshBuffers();
-   console.log(meshbuffers);
    window.setInterval(()=>{
       update();
       updateCallback();
