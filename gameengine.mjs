@@ -1,7 +1,7 @@
 import Camera from "./camera.mjs";
 import * as vecMath from './math.mjs';
 import { tweens } from './animation.mjs';
-import { meshes, meshbuffers } from "./mesh.mjs";
+import { meshes, meshbuffers, generateMeshBuffers } from "./mesh.mjs";
 
 export {setup, update, clickMeshes, rb, mouse};
 
@@ -24,7 +24,7 @@ let shaderProgram;
 let fb;
 export let gl;
 
-async function setup(callback){
+async function setup(setupCallback, updateCallback){
    createCanvas();
    initgl();
 
@@ -45,7 +45,13 @@ async function setup(callback){
    setupBuffers();
    setupShaderProgram();
    setupUniforms();
-   callback();
+   setupCallback();
+   generateMeshBuffers();
+   console.log(meshbuffers);
+   window.setInterval(()=>{
+      update();
+      updateCallback();
+   });
    render();
 }
 
@@ -69,8 +75,9 @@ function setupUniforms(){
    gl.uniform4fv(hoverColor, hovercol);
 }
 
-function update(callback){
+function update(){
    meshes.forEach(m=>{
+      if(!m.buffer){return;}
       if(m.update){
          m.buffer.vertices.splice(m.index, m.geometry.length, ...m.geometry.getVerts(m.transform));
          m.buffer.texindexarray.splice(m.index/3, m.geometry.length/3,...new Array(m.geometry.length/3).fill(m.texindex+.5));
@@ -84,7 +91,6 @@ function update(callback){
       gl.uniformMatrix4fv(Vmatrix, false, camera.transform);
       camera.update = false;
    }
-   callback();
 }
 
 function render() {
