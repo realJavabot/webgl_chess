@@ -3,12 +3,12 @@ precision mediump float;
 uniform sampler2D uChessTex;
 uniform vec4 baseColor;
 uniform vec4 hoverColor;
+uniform float TexIndex;
 
 varying mat4 matrix;
 varying vec3 vNormal;
 varying highp vec2 vTextureCoord;
 varying vec3 vPos;
-varying float TexIndex;
 
 
 void main(void) {
@@ -22,7 +22,6 @@ void main(void) {
         gl_FragColor = hoverColor;
         return;
     }
-
     
     vec4 ambient;
     vec4 specular = vec4(vec3(1.,1.,1.) * .5 * pow(clamp(dot(reflect(normalize(vPos-vec3(20.,20.,20.)),vNormal),normalize(vPos - (matrix*vec4(0.,-20.,0.,1.)).xyz)), .0, 1.),5.), 1.);

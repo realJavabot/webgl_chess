@@ -19,7 +19,7 @@ class mesh extends transformObject{
       super(x, y, z, s);
       this.texindex = 0;
       this.geometry = geos[geometry];
-      this.index = 0;
+      this.index = meshes.length;
       meshes.push(this);
    }
 

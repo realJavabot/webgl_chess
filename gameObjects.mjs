@@ -1,11 +1,12 @@
 import { mesh } from "./mesh.mjs";
 import { geo } from "./geometry.mjs";
 import { Tween, Bezier, Path } from "./animation.mjs";
-export { piece, pieces, square, squares, spawnPieces, taken};
+export { piece, pieces, square, squares, spawnPieces, taken, pieces_sorted};
 
 const BOARDOFFSET = -1;
 
 const pieces = [];
+const pieces_sorted = {};
 const taken = [];
 const pieceSize = .15;
 
@@ -43,6 +44,10 @@ class piece{
        this.path = false;
        this.tween = false;
        pieces.push(this);
+       if(typeof pieces_sorted[this.type] === 'undefined'){
+         pieces_sorted[this.type] = [];
+       }
+       pieces_sorted[this.type].push(this);
     }
 
     moveTo(x,y){
@@ -288,19 +293,19 @@ function moveLocal(p,x,y){
  class square{
     constructor(x,y){
        this.pos = [x,y];
-       this.geo = new geo("square"+x+y);
+       this.geometry = new geo("square"+x+y);
        this.mesh = new mesh("square"+x+y);
        this.mesh.ob = this;
        this.mesh.texindex = 0;
        const t = [x - 3.5, BOARDOFFSET, y - 3.5];
        this.mesh.translate(...t);
-       this.geo.vertices.push(-.5,0,-.5, .5,0,-.5, .5,0,.5, -.5,0,.5);
-       this.geo.normals.push(0,1,0, 0,1,0, 0,1,0, 0,1,0);
+       this.geometry.vertices.push(-.5,0,-.5, .5,0,-.5, .5,0,.5, -.5,0,.5);
+       this.geometry.normals.push(0,1,0, 0,1,0, 0,1,0, 0,1,0);
        x = x-4;
        y = y-4;
-       this.geo.texcoors.push(...[x,y, x+1,y, x+1,y+1, x,y+1].map(e=>{return (e+4)/8;}));
-       this.geo.indices.push(0,1,2, 0,2,3);
-       this.geo.length = 4*3;
+       this.geometry.texcoors.push(...[x,y, x+1,y, x+1,y+1, x,y+1].map(e=>{return (e+4)/8;}));
+       this.geometry.indices.push(0,1,2, 0,2,3);
+       this.geometry.length = 4*3;
        if(!squares[this.pos[0]]){
          squares[this.pos[0]] = [];
        }

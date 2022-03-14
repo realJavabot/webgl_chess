@@ -96,7 +96,6 @@
          canvas.addEventListener('mouseup', (event)=>{
             if(!mouse.dragging){
                const numMesh = clickMeshes(event);
-
                if(numMesh<meshes.length && numMesh>=0 && meshes[numMesh].ob){
                   const clickedMesh = meshes[numMesh];
                   if(!selected){
