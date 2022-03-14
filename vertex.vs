@@ -14,8 +14,9 @@ varying float TexIndex;
 varying vec3 vNormal;
 
 void main(void) {
-    gl_Position = Pmatrix*Vmatrix*Mmatrix*vec4(position, 1.);
-    vPos = position;
+    vec4 new_pos = Pmatrix*Vmatrix*Mmatrix*vec4(position, 1.);
+    gl_Position = new_pos;
+    vPos = new_pos.xyz;
     vNormal = normal;
     vTextureCoord = texcoor;
     matrix = Mmatrix;

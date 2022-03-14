@@ -1,9 +1,7 @@
 import Camera from "./camera.mjs";
 import * as vecMath from './math.mjs';
 import { tweens } from './animation.mjs';
-import { meshes, meshbuffers, generateMeshBuffers } from "./mesh.mjs";
-import { pieces_sorted, squares } from './gameObjects.mjs'; 
-import { geos } from "./geometry.mjs";
+import { meshes } from "./mesh.mjs";
 
 export {setup, update, clickMeshes, rb, mouse};
 
@@ -48,7 +46,11 @@ async function setup(setupCallback, updateCallback){
    setupShaderProgram();
    setupUniforms();
    await setupCallback();
-   //generateMeshBuffers();
+   meshes.sort(function(a, b){
+      if(a.geometry.name < b.geometry.name) { return -1; }
+      if(a.geometry.name > b.geometry.name) { return 1; }
+      return 0;
+  });
    window.setInterval(()=>{
       update();
       updateCallback();
@@ -99,75 +101,30 @@ function update(){
 function render() {
    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-   Object.keys(pieces_sorted).forEach(k=>{
-      gl.bindBuffer(gl.ARRAY_BUFFER, buffers["vertex_buffer"]);
-      gl.bufferData(gl.ARRAY_BUFFER, geos[k].vertices, gl.STATIC_DRAW);
-
-      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffers["index_buffer"]);
-      gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, geos[k].indices, gl.STATIC_DRAW);
-
-      gl.bindBuffer(gl.ARRAY_BUFFER, buffers["normal_buffer"]);
-      gl.bufferData(gl.ARRAY_BUFFER, geos[k].normals, gl.STATIC_DRAW);
-
-      gl.bindBuffer(gl.ARRAY_BUFFER, buffers["tex_buffer"]);
-      gl.bufferData(gl.ARRAY_BUFFER, geos[k].texcoors, gl.STATIC_DRAW);
-
-      let lastCol;
-      pieces_sorted[k].forEach(piece=>{
-         gl.uniformMatrix4fv(Mmatrix, false, piece.mesh.transform);
-         if(piece.mesh.texindex != lastCol){ 
-            gl.uniform1f(texIndexLocation, piece.mesh.texindex);
-            lastCol = piece.mesh.texindex;
-         }
-         gl.drawElements(gl.TRIANGLES, geos[k].indices.length, gl.UNSIGNED_SHORT, 0);
-      });
-   });
-
-   const square_geo = squares[0][0].geometry;
-
-   gl.bindBuffer(gl.ARRAY_BUFFER, buffers["vertex_buffer"]);
-   gl.bufferData(gl.ARRAY_BUFFER, square_geo.vertices, gl.STATIC_DRAW);
-
-   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffers["index_buffer"]);
-   gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, square_geo.indices, gl.STATIC_DRAW);
-
-   gl.bindBuffer(gl.ARRAY_BUFFER, buffers["normal_buffer"]);
-   gl.bufferData(gl.ARRAY_BUFFER, square_geo.normals, gl.STATIC_DRAW);
-
-   let lastTexIndex;
-   squares.forEach(row=>{
-      row.forEach(square=>{
-         if(lastTexIndex != square.mesh.texindex){
-            gl.uniform1f(texIndexLocation, square.mesh.texindex);
-            lastTexIndex = square.mesh.texindex;
-         }
-         gl.bindBuffer(gl.ARRAY_BUFFER, buffers["tex_buffer"]);
-         gl.bufferData(gl.ARRAY_BUFFER, square.geometry.texcoors, gl.STATIC_DRAW);
-         gl.uniformMatrix4fv(Mmatrix, false, square.mesh.transform);
-         gl.drawElements(gl.TRIANGLES, square_geo.indices.length, gl.UNSIGNED_SHORT, 0);
-      });
-   });
-
-   meshes.forEach(mesh=>{
-      if(typeof mesh.ob === 'undefined'){
-         gl.bindBuffer(gl.ARRAY_BUFFER, buffers["vertex_buffer"]);
-         gl.bufferData(gl.ARRAY_BUFFER, mesh.geometry.vertices, gl.STATIC_DRAW);
-
-         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffers["index_buffer"]);
-         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, mesh.geometry.indices, gl.STATIC_DRAW);
-
-         gl.bindBuffer(gl.ARRAY_BUFFER, buffers["normal_buffer"]);
-         gl.bufferData(gl.ARRAY_BUFFER, mesh.geometry.normals, gl.STATIC_DRAW);
-
-         gl.bindBuffer(gl.ARRAY_BUFFER, buffers["tex_buffer"]);
-         gl.bufferData(gl.ARRAY_BUFFER, mesh.geometry.texcoors, gl.STATIC_DRAW);
-
-         gl.uniformMatrix4fv(Mmatrix, false, mesh.transform);
-         gl.uniform1f(texIndexLocation, mesh.texindex);
-
-         gl.drawElements(gl.TRIANGLES, mesh.geometry.indices.length, gl.UNSIGNED_SHORT, 0);
+   const bufferIfNotEqual = (buffer_name, new_data, old_data) => {
+      if(!old_data || new_data !== old_data){
+         const bufValue = (buffer_name == "index_buffer")? gl.ELEMENT_ARRAY_BUFFER : gl.ARRAY_BUFFER;
+         gl.bindBuffer(bufValue, buffers[buffer_name]);
+         gl.bufferData(bufValue, new_data, gl.STATIC_DRAW);
       }
-   })
+   };
+
+   let last = {geometry:{}};
+   meshes.forEach(mesh=>{
+      bufferIfNotEqual("vertex_buffer", mesh.geometry.vertices, last.geometry.vertices);
+      bufferIfNotEqual("index_buffer", mesh.geometry.indices, last.geometry.indices);
+      bufferIfNotEqual("normal_buffer", mesh.geometry.normals, last.geometry.normals);
+      bufferIfNotEqual("tex_buffer", mesh.geometry.texcoors, last.geometry.texcoors);
+
+      gl.uniformMatrix4fv(Mmatrix, false, mesh.transform);
+      if(last.texindex != mesh.texindex){ 
+         gl.uniform1f(texIndexLocation, mesh.texindex);
+      }
+
+      gl.drawElements(gl.TRIANGLES, mesh.geometry.indices.length, gl.UNSIGNED_SHORT, 0);
+
+      last = mesh;
+   });
 
    window.requestAnimationFrame(render);
 }
@@ -259,45 +216,27 @@ function clickMeshes(e){
   
    gl.uniform1f(texIndexLocation, 3);
 
-   Object.keys(pieces_sorted).forEach(k=>{
-      gl.bindBuffer(gl.ARRAY_BUFFER, buffers["vertex_buffer"]);
-      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(geos[k].vertices), gl.STATIC_DRAW);
+   const bufferIfNotEqual = (buffer_name, new_data, old_data) => {
+      if(!old_data || new_data !== old_data){
+         const bufValue = (buffer_name == "index_buffer")? gl.ELEMENT_ARRAY_BUFFER : gl.ARRAY_BUFFER;
+         gl.bindBuffer(bufValue, buffers[buffer_name]);
+         gl.bufferData(bufValue, new_data, gl.STATIC_DRAW);
+      }
+   };
 
-      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffers["index_buffer"]);
-      gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(geos[k].indices), gl.STATIC_DRAW);
+   let last = {geometry:{}};
+   meshes.forEach(mesh=>{
+      bufferIfNotEqual("vertex_buffer", mesh.geometry.vertices, last.geometry.vertices);
+      bufferIfNotEqual("index_buffer", mesh.geometry.indices, last.geometry.indices);
+      bufferIfNotEqual("normal_buffer", mesh.geometry.normals, last.geometry.normals);
+      bufferIfNotEqual("tex_buffer", mesh.geometry.texcoors, last.geometry.texcoors);
 
-      gl.bindBuffer(gl.ARRAY_BUFFER, buffers["normal_buffer"]);
-      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(geos[k].normals), gl.STATIC_DRAW);
+      gl.uniformMatrix4fv(Mmatrix, false, mesh.transform);
+      gl.uniform4fv(baseColor, [mesh.index/255,0,0,1]);
 
-      gl.bindBuffer(gl.ARRAY_BUFFER, buffers["tex_buffer"]);
-      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(geos[k].texcoors), gl.STATIC_DRAW);
+      gl.drawElements(gl.TRIANGLES, mesh.geometry.indices.length, gl.UNSIGNED_SHORT, 0);
 
-      pieces_sorted[k].forEach(piece=>{
-         gl.uniformMatrix4fv(Mmatrix, false, piece.mesh.transform);
-         gl.uniform4fv(baseColor, [piece.mesh.index/255,0,0,1]);
-         gl.drawElements(gl.TRIANGLES, geos[k].indices.length, gl.UNSIGNED_SHORT, 0);
-      });
-   });
-
-   const square_geo = squares[0][0].geometry;
-
-   gl.bindBuffer(gl.ARRAY_BUFFER, buffers["vertex_buffer"]);
-   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(square_geo.vertices), gl.STATIC_DRAW);
-
-   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffers["index_buffer"]);
-   gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(square_geo.indices), gl.STATIC_DRAW);
-
-   gl.bindBuffer(gl.ARRAY_BUFFER, buffers["normal_buffer"]);
-   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(square_geo.normals), gl.STATIC_DRAW);
-
-   squares.forEach(row=>{
-      row.forEach(square=>{
-         gl.uniform4fv(baseColor, [square.mesh.index/255,0,0,1]);
-         gl.bindBuffer(gl.ARRAY_BUFFER, buffers["tex_buffer"]);
-         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(square.geometry.texcoors), gl.STATIC_DRAW);
-         gl.uniformMatrix4fv(Mmatrix, false, square.mesh.transform);
-         gl.drawElements(gl.TRIANGLES, square_geo.indices.length, gl.UNSIGNED_SHORT, 0);
-      });
+      last = mesh;
    });
 
    const pixel = new Uint8Array(4);
@@ -311,5 +250,8 @@ function clickMeshes(e){
    gl.uniform4fv(baseColor, highlightcol);
    gl.uniformMatrix4fv(Mmatrix, false, [1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1]);
    gl.bindRenderbuffer(gl.RENDERBUFFER, null);
-   return pixel[0] + pixel[1] + pixel[2];
+
+   const index = pixel[0] + pixel[1] + pixel[2];
+   
+   return meshes.find(e=>e.index == index);
 }

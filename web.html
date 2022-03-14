@@ -16,7 +16,7 @@
       <script type="module">
          import * as vecMath from './math.mjs';
          import { loadGeometry, geo, geoParams } from "./geometry.mjs";
-         import { mesh, meshes, generateMeshBuffers } from "./mesh.mjs";
+         import { mesh, meshes } from "./mesh.mjs";
          import { setup, update, clickMeshes, mouse } from "./gameengine.mjs";
          import { pieces, square, squares, spawnPieces, taken } from "./gameObjects.mjs";
          import { loadTex } from "./texture.mjs";
@@ -93,9 +93,8 @@
          
          canvas.addEventListener('mouseup', (event)=>{
             if(!mouse.dragging){
-               const numMesh = clickMeshes(event);
-               if(numMesh<meshes.length && numMesh>=0 && meshes[numMesh].ob){
-                  const clickedMesh = meshes[numMesh];
+               const clickedMesh = clickMeshes(event);
+               if(clickedMesh && clickedMesh.ob){
                   if(!selected){
                      if(clickedMesh.ob.type){
                         availableMoves = clickedMesh.ob.showMoves();
@@ -132,7 +131,7 @@
          canvas.addEventListener("mousemove", (event) =>{
             if(!selected){return;}
             if(mouse.state == mouse.states.UP){
-               const meshUnderMouse = meshes[clickMeshes(event)];
+               const meshUnderMouse = clickMeshes(event);
                if(!meshUnderMouse || mouseOver == meshUnderMouse){return;}
 
                mouseOver = meshUnderMouse;

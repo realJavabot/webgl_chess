@@ -292,21 +292,28 @@ function moveLocal(p,x,y){
  }
 
  const squares = [[]];
+ let square_params = {
+    vertices: new Float32Array([-.5,0,-.5, .5,0,-.5, .5,0,.5, -.5,0,.5]),
+    normals: new Float32Array([0,1,0, 0,1,0, 0,1,0, 0,1,0]),
+    indices: new Uint16Array([0,1,2, 0,2,3])
+   };
  class square{
     constructor(x,y){
        this.pos = [x,y];
 
        const offx = x-4;
        const offy = y-4;
+
+       // a bit janky, but the engine compares the individual buffers for optimization
+       // so reusing as many buffers as possible if beneficial
        this.geometry = new geo(
          "square"+x+y,
-         new geoParams(
-            [-.5,0,-.5, .5,0,-.5, .5,0,.5, -.5,0,.5],
-            [offx,offy, offx+1,offy, offx+1,offy+1, offx,offy+1].map(e=>{return (e+4)/8;}),
-            [0,1,0, 0,1,0, 0,1,0, 0,1,0],
-            [0,1,2, 0,2,3]
-         )
+         new geoParams([],[offx,offy, offx+1,offy, offx+1,offy+1, offx,offy+1].map(e=>{return (e+4)/8;}))
        );
+
+       this.geometry.vertices = square_params.vertices;
+       this.geometry.normals = square_params.normals;
+       this.geometry.indices = square_params.indices;
 
        this.mesh = new mesh("square"+x+y);
        this.mesh.ob = this;
