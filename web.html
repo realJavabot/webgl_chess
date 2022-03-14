@@ -15,7 +15,7 @@
       <canvas width = "800" height = "500" id = "my_Canvas"></canvas>
       <script type="module">
          import * as vecMath from './math.mjs';
-         import { loadGeometry, geo } from "./geometry.mjs";
+         import { loadGeometry, geo, geoParams } from "./geometry.mjs";
          import { mesh, meshes, generateMeshBuffers } from "./mesh.mjs";
          import { setup, update, clickMeshes, mouse } from "./gameengine.mjs";
          import { pieces, square, squares, spawnPieces, taken } from "./gameObjects.mjs";
@@ -40,31 +40,29 @@
                      }
                   }
 
+                  // generate board edges
                   const dim = 4;
                   const diff = dim + .05;
                   const offset = -1.2;
-                  const planeGeo = new geo("board_back");
-                  const planeMesh = new mesh("board_back");
+                  const planeParams = new geoParams();
 
-                  planeGeo.vertices.push(-diff,offset,-diff, diff,offset,-diff, diff,offset,diff, -diff,offset,diff);
-                  planeGeo.normals.push(0,1,0, 0,1,0, 0,1,0, 0,1,0);
-                  planeGeo.indices.push(0,1,2, 0,2,3);
-                  planeGeo.texcoors.push(0,0, 0,0, 0,0, 0,0);
                   let coords = [
                      [-dim,-1,-dim, -diff,offset,-diff, dim,-1,-dim, diff,offset,-diff],
                      [dim,-1,-dim, diff,offset,-diff, dim,-1,dim, diff,offset,diff],
                      [dim,-1,dim, diff,offset,diff, -dim,-1,dim, -diff,offset,diff],
                      [-dim,-1,dim, -diff,offset,diff, -dim,-1,-dim, -diff,offset,-diff]
                   ];
-                  for(let i=0; i<4; i++){
-                     let j = (i+1)*4;
-                     planeGeo.vertices.push(...coords[i]);
-                     planeGeo.normals.push(0,1,0, 0,1,0, 0,1,0, 0,1,0);
-                     planeGeo.indices.push(j,j+1,j+2, j+1,j+2,j+3);
-                     planeGeo.texcoors.push(0,0, 0,0, 0,0, 0,0);
-                  }
-                  planeGeo.length = planeGeo.vertices.length;
 
+                  for(let i=0; i<4; i++){
+                     let j = i*4;
+                     planeParams.vertices.push(...coords[i]);
+                     planeParams.normals.push(0,1,0, 0,1,0, 0,1,0, 0,1,0);
+                     planeParams.indices.push(j,j+1,j+2, j+1,j+2,j+3);
+                     planeParams.texcoors.push(0,0, 0,0, 0,0, 0,0);
+                  }
+
+                  const planeGeo = new geo("board_back", planeParams);
+                  const planeMesh = new mesh("board_back");
                   planeMesh.setTexIndex(2);
 
                   spawnPieces();
