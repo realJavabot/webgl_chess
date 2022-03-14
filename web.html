@@ -33,7 +33,7 @@
                   loadTex("./chesstex.jpg", "uChessTex")
                ];
 
-               Promise.all(loadCalls).then(()=>{
+               return Promise.all(loadCalls).then(()=>{
                   for(var i=0; i<8; i++){
                      for(var j=0; j<8; j++){
                         new square(i,j);
@@ -68,7 +68,6 @@
                   planeMesh.setTexIndex(2);
 
                   spawnPieces();
-                  console.log(meshes);
                });
             }, () => {
                pieces.forEach(piece=>{piece.update();});
