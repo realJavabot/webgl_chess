@@ -35,21 +35,21 @@ export default class transformObject{
 
      rotateX(x){
         const mat = this.transform.slice(0,12);
-        vecMath.rotateX(mat, x); vecMath.rotateX(this.rotationMat, x);
+        vecMath.rotateX(mat, x); vecMath.rotateX(this.rotationMat, -x);
         this.transform.splice(0,12,...mat);
         this.update = true;
      }
 
      rotateY(y){
         const mat = this.transform.slice(0,12);
-        vecMath.rotateY(mat, y); vecMath.rotateY(this.rotationMat, y);
+        vecMath.rotateY(mat, y); vecMath.rotateY(this.rotationMat, -y);
         this.transform.splice(0,12,...mat);
         this.update = true;
      }
 
      rotateZ(z){
         const mat = this.transform.slice(0,12);
-        vecMath.rotateZ(mat, z); vecMath.rotateZ(this.rotationMat, z);
+        vecMath.rotateZ(mat, z); vecMath.rotateZ(this.rotationMat, -z);
         this.transform.splice(0,12,...mat);
         this.update = true;
      }

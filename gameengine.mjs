@@ -63,12 +63,14 @@ let Mmatrix;
 let baseColor;
 let Vmatrix;
 let texIndexLocation;
+let rotMat;
 function setupUniforms(){
    Pmatrix = gl.getUniformLocation(shaderProgram, "Pmatrix");
    Vmatrix = gl.getUniformLocation(shaderProgram, "Vmatrix");
    Mmatrix = gl.getUniformLocation(shaderProgram, "Mmatrix");
    texIndexLocation = gl.getUniformLocation(shaderProgram, "TexIndex");
    baseColor = gl.getUniformLocation(shaderProgram, "baseColor");
+   rotMat = gl.getUniformLocation(shaderProgram, "rotationMat");
    let hoverColor = gl.getUniformLocation(shaderProgram, "hoverColor");
 
    const proj_matrix = vecMath.get_projection(30, canvas.width/canvas.height, 1, 100);
@@ -117,6 +119,7 @@ function render() {
       bufferIfNotEqual("tex_buffer", mesh.geometry.texcoors, last.geometry.texcoors);
 
       gl.uniformMatrix4fv(Mmatrix, false, mesh.transform);
+      gl.uniformMatrix4fv(rotMat, false, mesh.rotationMat);
       if(last.texindex != mesh.texindex){ 
          gl.uniform1f(texIndexLocation, mesh.texindex);
       }

@@ -41,11 +41,11 @@ void main(void) {
         ambient = vec4(-.01,-.01,-.01,1.0);
         diffuse *= vec4(0.02,0.02,0.02,0);
     }
-
-    /*vec3 ambient = vec3(.1,.1,.1);
-    vec3 diffuse = vec3(dot(vNormal, vec3(10.,10.,10.))) * .1;
-    vec3 specular = vec3(0.,0.,0.);
-    
-    gl_FragColor = vec4((ambient + diffuse + specular),1.);*/
     gl_FragColor = ambient + diffuse + specular;
+
+    // vec3 ambient = vec3(.1,.1,.1);
+    // vec3 diffuse = vec3(dot(vNormal, vec3(10.,10.,10.))) * .1;
+    // vec3 specular = vec3(0.,0.,0.);
+    
+    // gl_FragColor = vec4((ambient + diffuse + specular),1.);
 }
