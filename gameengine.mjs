@@ -2,6 +2,7 @@ import Camera from "./camera.mjs";
 import * as vecMath from './math.mjs';
 import { tweens } from './animation.mjs';
 import { meshes } from "./mesh.mjs";
+import UI from "./ui.mjs";
 
 export {setup, update, clickMeshes, rb, mouse};
 
@@ -23,6 +24,7 @@ let selected = 0;
 let shaderProgram;
 let fb;
 export let gl;
+let gameUI;
 
 async function setup(setupCallback, updateCallback){
    createCanvas();
@@ -41,6 +43,10 @@ async function setup(setupCallback, updateCallback){
    gl.shaderSource(fragShader, fragSource);
    gl.compileShader(fragShader);
    gl.attachShader(shaderProgram, fragShader);
+
+   const vertSource_ui = await (await fetch("./ui/vertex.vs")).text();
+   const fragSource_ui = await (await fetch("./ui/frag.vs")).text();
+   gameUI = new UI(canvas, gl, vertSource_ui, fragSource_ui);
 
    setupBuffers();
    setupShaderProgram();
@@ -128,6 +134,9 @@ function render() {
 
       last = mesh;
    });
+
+   gameUI.render();
+   gl.useProgram(shaderProgram);
 
    window.requestAnimationFrame(render);
 }

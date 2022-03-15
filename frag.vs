@@ -1,6 +1,7 @@
 precision mediump float;
 
 uniform sampler2D uChessTex;
+uniform sampler2D uiTex;
 uniform vec4 baseColor;
 uniform vec4 hoverColor;
 uniform float TexIndex;
