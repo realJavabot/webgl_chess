@@ -80,12 +80,10 @@
             availableMoves.forEach(mov=>{
                if(mov.pos[0] >= 0 && mov.pos[1] >= 0){
                   squares[mov.pos[0]][mov.pos[1]].mesh.setTexIndex(3);
-               }
-               pieces.forEach(piece=>{
-                  if(piece.pos[0] == mov.pos[0] && piece.pos[1] == mov.pos[1]){
-                     piece.mesh.setTexIndex(3);
+                  if(typeof mov.attacking !== 'undefined'){
+                     mov.attacking.mesh.setTexIndex(3);
                   }
-               });
+               }
             })
          };
 
@@ -94,7 +92,7 @@
          canvas.addEventListener('mouseup', (event)=>{
             if(!mouse.dragging){
                const clickedMesh = clickMeshes(event);
-               if(clickedMesh && clickedMesh.ob){
+               if(clickedMesh){
                   if(!selected){
                      if(clickedMesh.ob.type){
                         availableMoves = clickedMesh.ob.showMoves();
@@ -105,7 +103,13 @@
                         selected = 0;
                         availableMoves = [];
                      }else if(clickedMesh.texindex == 4){
-                        selected.moveTo(...clickedMesh.ob.pos);
+                        pieces.forEach(p=>{p.enpassant = false;})
+
+                        availableMoves.find(move => 
+                              vecMath.same2D(...clickedMesh.ob.pos, ...move.pos)
+                           || move.attacking == clickedMesh.ob
+                           ).perform();
+
                         selected = 0;
                         availableMoves = [];
                      }else if(clickedMesh.ob.type){
@@ -136,15 +140,17 @@
 
                mouseOver = meshUnderMouse;
 
-               const moveSquare = availableMoves.find(mov => vecMath.same2D(...mouseOver.ob.pos, ...mov.pos));
+               const move = availableMoves.find(mov => 
+                     vecMath.same2D(...meshUnderMouse.ob.pos, ...mov.pos)
+                  || mov.attacking == meshUnderMouse.ob
+               );
                
                colorMoves();
                
-               if(moveSquare){
-                  squares[moveSquare.pos[0]][moveSquare.pos[1]].mesh.setTexIndex(4);
-                  const hoverPiece = pieces.find(p => vecMath.same2D(...p.pos, ...moveSquare.pos));
-                  if(hoverPiece){
-                     hoverPiece.mesh.setTexIndex(4);
+               if(move){
+                  squares[move.pos[0]][move.pos[1]].mesh.setTexIndex(4);
+                  if(move.attacking){
+                     move.attacking.mesh.setTexIndex(4);
                   }
                }
             }

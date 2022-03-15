@@ -1,12 +1,12 @@
 import { mesh } from "./mesh.mjs";
 import { geo, geoParams } from "./geometry.mjs";
 import { Tween, Bezier, Path } from "./animation.mjs";
-export { piece, pieces, square, squares, spawnPieces, taken, pieces_sorted};
+import * as vecMath from "./math.mjs";
+export { piece, pieces, square, squares, spawnPieces, taken};
 
 const BOARDOFFSET = -1;
 
 const pieces = [];
-const pieces_sorted = {};
 const taken = [];
 const pieceSize = .15;
 
@@ -35,35 +35,23 @@ class piece{
        this.mesh = new mesh(type);
        this.boardTran(x,y);
        
-       if(type == "pawn"){
-          this.firstMove = true;
-       }
+       this.firstMove = true;
 
        this.mesh.ob = this;
        this.mesh.texindex = (this.color == "white")? 1 : 2;
        this.path = false;
        this.tween = false;
+       this.bezier = this.type == "knight";
 
        pieces.push(this);
-
-       if(typeof pieces_sorted[this.type] === 'undefined'){
-         pieces_sorted[this.type] = [];
-       }
-       pieces_sorted[this.type].push(this);
     }
 
     moveTo(x,y){
-      pieces.forEach(p=>{
-         if(p.pos[0] == x && p.pos[1] == y){
-            p.delete();
-         }
-      });
-
       if(this.firstMove){
          this.firstMove = false;
       }
       
-      if(this.type == "knight"){
+      if(this.bezier){
          this.path = new Bezier([this.pos[0],this.pos[1],0, this.pos[0],this.pos[1],5, x,y,5, x,y,0]);
       }else{
          this.path = new Path(...this.pos, x, y);
@@ -77,12 +65,6 @@ class piece{
    }
 
     setPos(x,y){
-      pieces.forEach(p=>{
-         if(p.pos[0] == x && p.pos[1] == y){
-            p.delete();
-         }
-      });
-
       if(this.firstMove){
          this.firstMove = false;
       }
@@ -109,7 +91,7 @@ class piece{
          if(pos[0] < 0 || pos[0] > 7 || pos[1] < 0 || pos[1] > 7){
             break;
          }
-         const newmove = new move([...pos]);
+         const newmove = new move(this, [...pos]);
          if(moves[moves.length-1]){
             moves[moves.length-1].to = newmove;
          }
@@ -135,6 +117,7 @@ class piece{
        this.pos = [-1,-1];
        pieces.splice(pieces.indexOf(this),1);
        taken.push(this);
+       this.mesh.ob = 0;
     }
 
     /*delete(){
@@ -162,9 +145,11 @@ class piece{
  }
 
  class move{
-    constructor(pos, to){
+    constructor(piece, pos, attacking, to){
       this.to = to;
       this.pos = pos;
+      this.attacking = (attacking)? attacking : pieces.find(p => vecMath.same2D(...p.pos, ...pos));
+      this.piece = piece;
     }
     remove(){
        if(this.to){
@@ -172,11 +157,41 @@ class piece{
        }
        this.pos = [-1,-1];
     }
+    perform(){
+      if(this.attacking){this.attacking.delete();}
+      this.piece.moveTo(...this.pos);
+    }
+ }
+
+ class castle extends move{ 
+   constructor(king, rook){
+     const dir = Math.sign(rook.pos[0] - king.pos[0]);
+     super(king, [king.pos[0] + dir * 2, king.pos[1]]);
+     this.dir = dir;
+     this.king = king;
+     this.rook = rook;
+   }
+   perform(){
+      this.king.moveTo(...this.pos);
+      this.rook.bezier = true;
+      this.rook.moveTo(this.pos[0] - this.dir, this.pos[1]);
+      this.rook.bezier = false;
+   }
+ }
+
+ class pawnJump extends move{
+    constructor(piece, pos){
+       super(piece, pos);
+    }
+    perform(){
+       super.perform();
+       this.piece.enpassant = true;
+    }
  }
 
  function clearAvailable(available, to_p, from_p){
    available.forEach(mov=>{
-      if(mov.pos[0] == to_p.pos[0] && mov.pos[1] == to_p.pos[1]){
+      if(vecMath.same2D(...to_p.pos, ...mov.pos)){
          if(to_p.color == from_p.color || (from_p.type == "pawn" && from_p.pos[0] == to_p.pos[0])){
             mov.remove()
          }else if(mov.to){
@@ -186,22 +201,30 @@ class piece{
    });
  }
 
- function movepawn(piece){
-   const pos = piece.pos;
-   const dir = (piece.color == "white")? -1 :  1;
-   const available = [new move([pos[0],pos[1]+1*dir])];
-   if(piece.firstMove){
-      const secondMove = new move([pos[0],pos[1]+2*dir]);
+ function movepawn(pawn){
+   const pos = pawn.pos;
+   const dir = (pawn.color == "white")? -1 :  1;
+   const available = [new move(pawn,[pos[0],pos[1]+1*dir])];
+   if(pawn.firstMove){
+      const secondMove = new pawnJump(pawn,[pos[0],pos[1]+2*dir]);
       available[0].to = secondMove;
       available.push(secondMove);
    }
    pieces.forEach(p=>{
-      clearAvailable(available,p,piece);
-      if(  p.color != piece.color && 
-         ((p.pos[0] == pos[0]-1 && p.pos[1] == pos[1]+1*dir) || 
-          (p.pos[0] == pos[0]+1 && p.pos[1] == pos[1]+1*dir))){
-            available.push(new move(p.pos));
+      clearAvailable(available,p,pawn);
+      if( p.color != pawn.color){
+         // take diagnoal piece
+         if( vecMath.same2D(...p.pos, ...vecMath.add(pos, [-1,dir])) 
+          || vecMath.same2D(...p.pos, ...vecMath.add(pos, [ 1,dir]))){
+            available.push(new move(pawn, p.pos, p));
          }
+         // enpassant
+         if(p.enpassant && 
+            ( vecMath.same2D(...p.pos, ...vecMath.add(pos, [ 1,0])) 
+           || vecMath.same2D(...p.pos, ...vecMath.add(pos, [-1,0])))){
+            available.push(new move(pawn, vecMath.add(p.pos, [0,dir]), p));
+         }
+      }
    });
    return available;
  }
@@ -222,9 +245,9 @@ class piece{
 function moveLocal(p,x,y){
    if(p.pos[0]+x >= 0 && p.pos[0]+x < 8 &&
       p.pos[1]+y >= 0 && p.pos[1]+y < 8){
-      return new move([p.pos[0]+x,p.pos[1]+y]);
+      return new move(p, [p.pos[0]+x,p.pos[1]+y]);
    }
-   return new move([-1,-1]);
+   return new move(p, [-1,-1]);
 }
 
  function moveknight(piece){
@@ -275,6 +298,8 @@ function moveLocal(p,x,y){
  }
 
  function moveking(piece){
+   const range = (a, b) => Array.from(Array(Math.abs(a-b)+1).keys(), k => k + Math.min(a,b));
+
    const available = [
       moveLocal(piece,-1,1), 
       moveLocal(piece,0,1), 
@@ -285,6 +310,22 @@ function moveLocal(p,x,y){
       moveLocal(piece,-1,-1), 
       moveLocal(piece,-1,0)
    ];
+
+   if(piece.firstMove){
+      pieces
+         .filter(p => p.type == "rook" && p.color == piece.color && p.firstMove)
+         .forEach(rook=>{
+            let blocked = false;
+            let dir = Math.sign(rook.pos[0] - piece.pos[0]);
+            range(piece.pos[0] + 1*dir, rook.pos[0] - 1*dir).forEach(x => {
+               blocked |= pieces.some(p => {return p.pos[0] == x && p.pos[1] == piece.pos[1]});
+            });
+            if(!blocked){
+               available.push(new castle(piece, rook));
+            }
+         });
+   }
+
    pieces.forEach(p=>{
       clearAvailable(available,p,piece);
    });
