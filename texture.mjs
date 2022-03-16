@@ -1,17 +1,16 @@
-import {gl} from "./gameengine.mjs";
+import {gl, shaderProgram} from "./gameengine.mjs";
 import { isPowerOf2 } from "./math.mjs";
-export {loadTex};
+export {loadTexFromImage, texIndex};
 
 let numTextures = 0;
 
-function loadTex(path, uniform_name){
+function loadTexFromImage(path, uniform_name){
    return new Promise((resolve)=>{
       const image = new Image();
-      const texIndex = numTextures;
       
       image.onload = () => {
          const texture = gl.createTexture();
-         gl.activeTexture(gl.TEXTURE0 + texIndex);
+         gl.activeTexture(texIndex(uniform_name));
          gl.bindTexture(gl.TEXTURE_2D, texture);
          gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
 
@@ -32,6 +31,12 @@ function loadTex(path, uniform_name){
       };
 
       image.src = path;
-      numTextures++;
    });
+ }
+
+ function texIndex(uniform_name){
+   const texture_location = gl.getUniformLocation(shaderProgram, uniform_name);
+   gl.uniform1i(texture_location, numTextures);
+   numTextures++;
+   return gl.TEXTURE0 + numTextures-1;
  }

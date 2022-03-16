@@ -4,7 +4,7 @@ import { tweens } from './animation.mjs';
 import { meshes } from "./mesh.mjs";
 import UI from "./ui.mjs";
 
-export {setup, update, clickMeshes, rb, mouse};
+export {setup, update, clickMeshes, rb, mouse, shaderProgram};
 
 const mouse = {
    states: {
@@ -61,6 +61,7 @@ async function setup(setupCallback, updateCallback){
       update();
       updateCallback();
    });
+
    render();
 }
 
@@ -70,6 +71,7 @@ let baseColor;
 let Vmatrix;
 let texIndexLocation;
 let rotMat;
+let proj_matrix;
 function setupUniforms(){
    Pmatrix = gl.getUniformLocation(shaderProgram, "Pmatrix");
    Vmatrix = gl.getUniformLocation(shaderProgram, "Vmatrix");
@@ -79,7 +81,7 @@ function setupUniforms(){
    rotMat = gl.getUniformLocation(shaderProgram, "rotationMat");
    let hoverColor = gl.getUniformLocation(shaderProgram, "hoverColor");
 
-   const proj_matrix = vecMath.get_projection(30, canvas.width/canvas.height, 1, 100);
+   proj_matrix = vecMath.get_projection(30, canvas.width/canvas.height, 1, 100);
    const mov_matrix = [1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1];
 
    gl.uniformMatrix4fv(Pmatrix, false, proj_matrix);
@@ -101,12 +103,14 @@ function update(){
       tween.update();
    });
    if(camera.update){
-      gl.uniformMatrix4fv(Vmatrix, false, camera.transform);
+      // gl.uniformMatrix4fv(Vmatrix, false, camera.transform);
       camera.update = false;
    }
 }
 
 function render() {
+   gl.uniformMatrix4fv(Vmatrix, false, camera.transform);
+
    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
    const bufferIfNotEqual = (buffer_name, new_data, old_data) => {
@@ -135,8 +139,7 @@ function render() {
       last = mesh;
    });
 
-   gameUI.render();
-   gl.useProgram(shaderProgram);
+   gameUI.render(buffers, Mmatrix, Vmatrix, texIndexLocation);
 
    window.requestAnimationFrame(render);
 }
@@ -215,7 +218,9 @@ function createCanvas(){
 
 function initgl(){
    gl = canvas.getContext('experimental-webgl',{preserveDrawingBuffer: true});
+   gl.enable(gl.BLEND);
    gl.enable(gl.DEPTH_TEST);
+   gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
    gl.depthFunc(gl.LEQUAL);
    gl.clearColor(0.5, 0.5, 0.5, 0.9);
    gl.clearDepth(1.0);
@@ -225,8 +230,11 @@ function initgl(){
 
 function clickMeshes(e){
    gl.bindRenderbuffer(gl.RENDERBUFFER, rb);
-  
+   
+   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
    gl.uniform1f(texIndexLocation, 3);
+   gl.uniformMatrix4fv(Vmatrix, false, camera.transform);
 
    const bufferIfNotEqual = (buffer_name, new_data, old_data) => {
       if(!old_data || new_data !== old_data){
