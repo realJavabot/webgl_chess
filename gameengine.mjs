@@ -162,6 +162,12 @@ function setupBuffers(){
 function setupShaderProgram(){
    gl.linkProgram(shaderProgram);
 
+   enableBuffers();
+
+   gl.useProgram(shaderProgram);
+}
+
+function enableBuffers(){
    gl.bindBuffer(gl.ARRAY_BUFFER, buffers["vertex_buffer"]);
    const position = gl.getAttribLocation(shaderProgram, "position");
    gl.vertexAttribPointer(position, 3, gl.FLOAT, false,0,0) ;
@@ -176,8 +182,6 @@ function setupShaderProgram(){
    const texcoor = gl.getAttribLocation(shaderProgram, "texcoor");
    gl.vertexAttribPointer(texcoor, 2, gl.FLOAT, false,0,0);
    gl.enableVertexAttribArray(texcoor);
-
-   gl.useProgram(shaderProgram);
 }
 
 function createCanvas(){
