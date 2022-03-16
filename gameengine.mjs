@@ -139,9 +139,7 @@ function render() {
       last = mesh;
    });
 
-   gl.enable(gl.BLEND);
    gameUI.render(buffers, Mmatrix, Vmatrix, texIndexLocation);
-   gl.disable(gl.BLEND);
 
    window.requestAnimationFrame(render);
 }
