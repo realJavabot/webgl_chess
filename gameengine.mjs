@@ -139,7 +139,9 @@ function render() {
       last = mesh;
    });
 
+   gl.enable(gl.BLEND);
    gameUI.render(buffers, Mmatrix, Vmatrix, texIndexLocation);
+   gl.disable(gl.BLEND);
 
    window.requestAnimationFrame(render);
 }
@@ -218,7 +220,6 @@ function createCanvas(){
 
 function initgl(){
    gl = canvas.getContext('experimental-webgl',{preserveDrawingBuffer: true});
-   gl.enable(gl.BLEND);
    gl.enable(gl.DEPTH_TEST);
    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
    gl.depthFunc(gl.LEQUAL);
