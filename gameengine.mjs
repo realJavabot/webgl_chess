@@ -108,18 +108,18 @@ function update(){
    }
 }
 
+const bufferIfNotEqual = (buffer_name, new_data, old_data) => {
+   if(!old_data || new_data !== old_data){
+      const bufValue = (buffer_name == "index_buffer")? gl.ELEMENT_ARRAY_BUFFER : gl.ARRAY_BUFFER;
+      gl.bindBuffer(bufValue, buffers[buffer_name]);
+      gl.bufferData(bufValue, new_data, gl.STATIC_DRAW);
+   }
+};
+
 function render() {
    gl.uniformMatrix4fv(Vmatrix, false, camera.transform);
 
    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-   const bufferIfNotEqual = (buffer_name, new_data, old_data) => {
-      if(!old_data || new_data !== old_data){
-         const bufValue = (buffer_name == "index_buffer")? gl.ELEMENT_ARRAY_BUFFER : gl.ARRAY_BUFFER;
-         gl.bindBuffer(bufValue, buffers[buffer_name]);
-         gl.bufferData(bufValue, new_data, gl.STATIC_DRAW);
-      }
-   };
 
    let last = {geometry:{}};
    meshes.forEach(mesh=>{
@@ -238,14 +238,6 @@ function clickMeshes(e){
 
    gl.uniform1f(texIndexLocation, 3);
    gl.uniformMatrix4fv(Vmatrix, false, camera.transform);
-
-   const bufferIfNotEqual = (buffer_name, new_data, old_data) => {
-      if(!old_data || new_data !== old_data){
-         const bufValue = (buffer_name == "index_buffer")? gl.ELEMENT_ARRAY_BUFFER : gl.ARRAY_BUFFER;
-         gl.bindBuffer(bufValue, buffers[buffer_name]);
-         gl.bufferData(bufValue, new_data, gl.STATIC_DRAW);
-      }
-   };
 
    let last = {geometry:{}};
    meshes.forEach(mesh=>{
