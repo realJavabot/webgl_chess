@@ -4,7 +4,7 @@ import { tweens } from './animation.mjs';
 import { meshes } from "./mesh.mjs";
 import UI from "./ui.mjs";
 
-export {setup, update, clickMeshes, rb, mouse, shaderProgram};
+export {setup, update, clickMeshes, rb, mouse, shaderProgram, enableBuffers};
 
 const mouse = {
    states: {
