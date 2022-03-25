@@ -2,9 +2,12 @@ import { mesh } from "./mesh.mjs";
 import { geo, geoParams } from "./geometry.mjs";
 import { Tween, Bezier, Path } from "./animation.mjs";
 import * as vecMath from "./math.mjs";
-export { piece, pieces, square, squares, spawnPieces, taken};
+import { gameUI } from "./gameengine.mjs";
+export { piece, pieces, square, squares, spawnPieces, taken, game_input};
 
 const BOARDOFFSET = -1;
+
+let game_input = true;
 
 const pieces = [];
 const taken = [];
@@ -62,6 +65,12 @@ class piece{
          this.tween = new Tween(.07);
       }
       this.pos = [x,y];
+
+      if(this.type == "pawn" 
+         && (  (this.color == "black" && this.pos[1] == 7) 
+            || (this.color == "white" && this.pos[1] == 0))){
+            upgrade_piece();
+      }
    }
 
     setPos(x,y){
@@ -142,6 +151,11 @@ class piece{
     resetTexIndex(){
       this.mesh.setTexIndex((this.color == "white")? 1 : 2);
     }
+ }
+
+ function upgrade_piece(){
+   gameUI.active = true;
+   game_input = false;
  }
 
  class move{

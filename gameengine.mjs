@@ -3,8 +3,9 @@ import * as vecMath from './math.mjs';
 import { tweens } from './animation.mjs';
 import { meshes } from "./mesh.mjs";
 import UI from "./ui.mjs";
+import { newBlankTex } from "./texture.mjs";
 
-export {setup, update, clickMeshes, rb, mouse, shaderProgram, enableBuffers};
+export {setup, update, clickMeshes, rb, mouse, shaderProgram, enableBuffers, inputBuffer, gameUI, shaderProgramFromSource};
 
 const mouse = {
    states: {
@@ -23,6 +24,7 @@ let canvas;
 let selected = 0;
 let shaderProgram;
 let fb;
+let inputBuffer;
 export let gl;
 let gameUI;
 
@@ -33,24 +35,27 @@ async function setup(setupCallback, updateCallback){
    shaderProgram = gl.createProgram();
 
    const vertSource = await (await fetch("vertex.vs")).text();
-   const vertShader = gl.createShader(gl.VERTEX_SHADER);
-   gl.shaderSource(vertShader, vertSource);
-   gl.compileShader(vertShader);
-   gl.attachShader(shaderProgram, vertShader);
-         
    const fragSource = await (await fetch("frag.vs")).text();
-   const fragShader = gl.createShader(gl.FRAGMENT_SHADER);
-   gl.shaderSource(fragShader, fragSource);
-   gl.compileShader(fragShader);
-   gl.attachShader(shaderProgram, fragShader);
 
    const vertSource_ui = await (await fetch("./ui/vertex.vs")).text();
    const fragSource_ui = await (await fetch("./ui/frag.vs")).text();
    gameUI = new UI(canvas, gl, vertSource_ui, fragSource_ui);
 
+   shaderProgram = shaderProgramFromSource(vertSource, fragSource);
+   gl.useProgram(shaderProgram);
+
    setupBuffers();
-   setupShaderProgram();
    setupUniforms();
+   enableBuffers();
+
+   const vert_source_simple = await (await fetch("simple_vert.vs")).text();
+   const frag_source_simple = await (await fetch("simple_frag.vs")).text();
+   const simpleShader = shaderProgramFromSource(vert_source_simple, frag_source_simple);
+   const texture = newBlankTex("buffer", simpleShader, canvas.width, canvas.height);
+   const main_buffer = gl.createFramebuffer();
+   gl.bindFramebuffer(gl.FRAMEBUFFER, main_buffer);
+   gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+
    await setupCallback();
    meshes.sort(function(a, b){
       if(a.geometry.name < b.geometry.name) { return -1; }
@@ -159,14 +164,6 @@ function setupBuffers(){
    gl.bindRenderbuffer(gl.RENDERBUFFER, null);
 }
 
-function setupShaderProgram(){
-   gl.linkProgram(shaderProgram);
-
-   enableBuffers();
-
-   gl.useProgram(shaderProgram);
-}
-
 function enableBuffers(){
    gl.bindBuffer(gl.ARRAY_BUFFER, buffers["vertex_buffer"]);
    const position = gl.getAttribLocation(shaderProgram, "position");
@@ -220,6 +217,22 @@ function createCanvas(){
    });
 }
 
+function shaderProgramFromSource(vertSource, fragSource){
+   const sp = gl.createProgram();
+   const vertShader = gl.createShader(gl.VERTEX_SHADER);
+   gl.shaderSource(vertShader, vertSource);
+   gl.compileShader(vertShader);
+   gl.attachShader(sp, vertShader);
+         
+   const fragShader = gl.createShader(gl.FRAGMENT_SHADER);
+   gl.shaderSource(fragShader, fragSource);
+   gl.compileShader(fragShader);
+   gl.attachShader(sp, fragShader);
+
+   gl.linkProgram(sp);
+   return sp;
+}
+
 function initgl(){
    gl = canvas.getContext('experimental-webgl',{preserveDrawingBuffer: true});
    gl.enable(gl.DEPTH_TEST);
@@ -228,7 +241,7 @@ function initgl(){
    gl.clearColor(0.5, 0.5, 0.5, 0.9);
    gl.clearDepth(1.0);
 
-   gl.viewport(0.0, 0.0, canvas.width, canvas.height);
+   gl.viewport(0.0, 0.0, canvas.width*2, canvas.height*2);
 }
 
 function clickMeshes(e){

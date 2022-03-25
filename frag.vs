@@ -31,8 +31,22 @@ void main(void) {
     }
     
     vec3 ambient;
-    vec3 specular = vec3(1.,1.,1.) * .5 * pow(clamp(dot(reflect(normalize(vPos-vec3(20.,20.,20.)),vNormal),normalize(vPos - (matrix*vec4(0.,-20.,0.,1.)).xyz)), .0, 1.),5.);
-    vec3 diffuse = vec3(clamp(dot(vec3(20.,20.,20.), vNormal), 0., 1.));
+    vec3 specular = vec3(1.,1.,1.) * .5 
+    * pow(
+        dot(
+            reflect(
+                normalize(
+                    vPos-vec3(20.,20.,20.)
+                ),
+                vNormal
+            ),
+            normalize(
+                vPos - (matrix*vec4(0.,-20.,0.,1.)).xyz
+            )
+        ),
+    5.);
+    vec3 diffuse = vec3(clamp(dot( vec3(20.,20.,20.), vNormal), 0., 1.));
+    vec3 shadows = vec3(clamp(dot(-vec3(20.,20.,20.) - vec3(10.), vNormal), 0., 10.))/10.;
 
     if(int(TexIndex) == 0){ // board
         ambient = vec3(0.,0.,0.05) + vec3(texture2D(uChessTex, vTextureCoord).xyz * .1);
@@ -40,8 +54,9 @@ void main(void) {
     }
     if(int(TexIndex) == 1){ // white
         ambient = vec3(0) / 2.;
-        diffuse *= vec3(.5,.5,.1) * .75;
-        specular *= .8;
+        diffuse = vec3(.9,.9,.1) * .75;
+        diffuse -= shadows*.6*vec3(.9,.9,.1);
+        specular *= 1.3;
         //diffuse += + vec3(vPos.zzz,0) / 20.;
     }
     if(int(TexIndex) == 2){ // black

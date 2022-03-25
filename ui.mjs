@@ -1,30 +1,30 @@
-import { texIndex } from "./texture.mjs";
-import { shaderProgram, enableBuffers } from "./gameengine.mjs";
+import { newBlankTex } from "./texture.mjs";
+import { gl, shaderProgram, enableBuffers, shaderProgramFromSource } from "./gameengine.mjs";
 import transformObject from "./transformObject.mjs";
 
 const states = {BASE:0, MOUSEOVER:1};
 let update_ui = false;
 
 export default class UI{
-    constructor(canvas, gl, vertSource, fragSource){
+    constructor(canvas, vertSource, fragSource){
         this.w = canvas.width;
         this.h = canvas.height;
         this.canvas = canvas;
-        this.gl = gl;
+        this._active = false;
 
         this.vBuffer = gl.createBuffer();
         this.iBuffer = gl.createBuffer();
 
-        this.initShaderProgram(vertSource, fragSource);
+        this.sp = shaderProgramFromSource(vertSource, fragSource);
 
-        this.initUITexture(canvas);
+        this.texIndex = newBlankTex("uiTex", shaderProgram, canvas.width, canvas.height);
 
         this.fb = gl.createFramebuffer();
         gl.bindFramebuffer(gl.FRAMEBUFFER, this.fb);
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.texture, 0);
         
         ui_elements.push(new UI_Button(0,0,.1,.1), new UI_Square(-.5,0,.1,.1,[0,1,0,.5]));
-        // ui_elements[1].rotation = .5;
+        // ui_elements[0].onmousedown = ()=>{console.log("replaced!");};
         this.update();
 
         this.renderOb = {
@@ -37,26 +37,41 @@ export default class UI{
             vmat: [1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1]
         };
 
-        canvas.addEventListener("mousemove",event=>{
+        const elements_mouse_state = (event)=>{
             const x = (event.clientX - canvas.offsetLeft)/canvas.width - .5;
             const y = (canvas.height - event.clientY - window.scrollY + canvas.offsetTop)/canvas.height - .5;
-            ui_elements.forEach(el=>{
-                if(el.collision){
-                    const mouse_in = el.contains(x,y);
-                    if(el.state == states.BASE && mouse_in){
-                        el.onmouseover();
-                    }
-                    else if(el.state == states.MOUSEOVER && !mouse_in){
-                        el.onmouseout();
-                    }
+            return ui_elements
+                    .filter(el=>el.collision)
+                    .map(el=> {
+                        return {el, mouse_in:el.contains(x,y)};
+                    });
+        }
+
+        canvas.addEventListener("mousemove",event=>{
+            elements_mouse_state(event).forEach(({el, mouse_in})=>{
+                if(el.state == states.BASE && mouse_in){
+                    el.onmouseover();
+                }
+                else if(el.state == states.MOUSEOVER && !mouse_in){
+                    el.onmouseout();
                 }
             });
         });
+        canvas.addEventListener("mousedown",event=>{
+            elements_mouse_state(event)
+                .filter(({mouse_in}) => mouse_in)
+                .forEach(({el}) => el.onmousedown());
+        });
+    }
+
+    get active(){return this._active;}
+    set active(toggle){
+        if(this._active = toggle){
+            update_ui = true;
+        }
     }
 
     update(){
-        const gl = this.gl;
-
         gl.useProgram(this.sp);
         gl.bindFramebuffer(gl.FRAMEBUFFER, this.fb);
 
@@ -93,7 +108,12 @@ export default class UI{
     }
 
     render(buffers, Mmatrix, Vmatrix, texIndexLocation){
-        const gl = this.gl;
+        if(!this.active){return;}
+
+        if(update_ui){
+            this.update();
+            update_ui = false;
+        }
 
         const buffer_data = (buffer_name, data) => {
             const bufValue = (buffer_name == "index_buffer")? gl.ELEMENT_ARRAY_BUFFER : gl.ARRAY_BUFFER;
@@ -116,41 +136,7 @@ export default class UI{
         gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
 
         gl.disable(gl.BLEND);
-        if(update_ui){
-            this.update();
-            update_ui = false;
-        }
     }   
-
-    initShaderProgram(vertSource, fragSource){
-        const gl = this.gl;
-        this.sp = gl.createProgram();
-        const vertShader = gl.createShader(gl.VERTEX_SHADER);
-        gl.shaderSource(vertShader, vertSource);
-        gl.compileShader(vertShader);
-        gl.attachShader(this.sp, vertShader);
-              
-        const fragShader = gl.createShader(gl.FRAGMENT_SHADER);
-        gl.shaderSource(fragShader, fragSource);
-        gl.compileShader(fragShader);
-        gl.attachShader(this.sp, fragShader);
-
-        gl.linkProgram(this.sp);
-    }
-
-    initUITexture(canvas){
-        const gl = this.gl;
-
-        this.texture = gl.createTexture();
-        gl.bindTexture(gl.TEXTURE_2D, this.texture);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA,
-            canvas.width, canvas.height, 0, gl.RGBA, gl.UNSIGNED_BYTE,
-            null);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-        this.texIndex = texIndex("uiTex");
-    }
 }
 
 const matMult2D = (a,b) => [
@@ -244,6 +230,9 @@ class UI_Button extends UI_Square{
     onmouseout(){
         this.color = this.base_color;
         this.state = states.BASE;
+    }
+    onmousedown(){
+        console.log("button pressed");
     }
     contains(x,y){
         return (

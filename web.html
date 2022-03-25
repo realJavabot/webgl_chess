@@ -17,8 +17,8 @@
          import * as vecMath from './math.mjs';
          import { loadGeometry, geo, geoParams } from "./geometry.mjs";
          import { mesh } from "./mesh.mjs";
-         import { setup, clickMeshes, mouse } from "./gameengine.mjs";
-         import { pieces, square, squares, spawnPieces, taken } from "./gameObjects.mjs";
+         import { setup, clickMeshes, mouse, shaderProgram } from "./gameengine.mjs";
+         import { pieces, square, squares, spawnPieces, taken, game_input } from "./gameObjects.mjs";
          import { loadTexFromImage } from "./texture.mjs";
 
          window.onload = () =>{
@@ -30,7 +30,7 @@
                   loadGeometry("./models/king.obj", "king"),
                   loadGeometry("./models/bishop.obj", "bishop"),
                   loadGeometry("./models/queen.obj", "queen"),
-                  loadTexFromImage("./chesstex.jpg", "uChessTex")
+                  loadTexFromImage("./chesstex.jpg", "uChessTex", shaderProgram)
                ];
 
                return Promise.all(loadCalls).then(()=>{
@@ -90,6 +90,8 @@
          let selected;
          
          canvas.addEventListener('mouseup', (event)=>{
+
+            if(!game_input){return;}
             if(!mouse.dragging){
                const clickedMesh = clickMeshes(event);
                if(clickedMesh){
@@ -133,6 +135,7 @@
 
          let mouseOver;
          canvas.addEventListener("mousemove", (event) =>{
+            if(!game_input){return;}
             if(!selected){return;}
             if(mouse.state == mouse.states.UP){
                const meshUnderMouse = clickMeshes(event);
