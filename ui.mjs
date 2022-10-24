@@ -1,9 +1,10 @@
-import { newBlankTex } from "./texture.mjs";
-import { gl, shaderProgram, enableBuffers, shaderProgramFromSource } from "./gameengine.mjs";
-import transformObject from "./transformObject.mjs";
+import { newBlankColorTex } from "./texture.mjs";
+import { gl } from "./gameengine.mjs";
+import { simple_shader_program } from "./shaders.mjs";
 
 const states = {BASE:0, MOUSEOVER:1};
 let update_ui = false;
+let shaderProgram;
 
 export default class UI{
     constructor(canvas, vertSource, fragSource){
@@ -17,7 +18,7 @@ export default class UI{
 
         this.sp = shaderProgramFromSource(vertSource, fragSource);
 
-        this.texIndex = newBlankTex("uiTex", shaderProgram, canvas.width, canvas.height);
+        newBlankColorTex(canvas.width, canvas.height);
 
         this.fb = gl.createFramebuffer();
         gl.bindFramebuffer(gl.FRAMEBUFFER, this.fb);

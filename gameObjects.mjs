@@ -81,14 +81,16 @@ class piece{
        this.pos = [x,y];
     }
     showMoves(){
+       let moves;
        switch(this.type){
-          case "pawn": return movepawn(this); break;
-          case "rook": return moverook(this); break;
-          case "knight": return moveknight(this); break;
-          case "bishop": return movebishop(this); break;
-          case "queen": return movequeen(this); break;
-          case "king": return moveking(this); break;
+          case "pawn": moves = movepawn(this); break;
+          case "rook": moves = moverook(this); break;
+          case "knight": moves = moveknight(this); break;
+          case "bishop": moves = movebishop(this); break;
+          case "queen": moves = movequeen(this); break;
+          case "king": moves = moveking(this); break;
        }
+       return moves.filter(e => e.pos[0] != -1 && e.pos[1] != -1);
     }
 
     getMoveLine(offset){
@@ -203,12 +205,14 @@ class piece{
     }
  }
 
- function clearAvailable(available, to_p, from_p){
+ function clearAvailable(available, to_piece, from_piece){
    available.forEach(mov=>{
-      if(vecMath.same2D(...to_p.pos, ...mov.pos)){
-         if(to_p.color == from_p.color || (from_p.type == "pawn" && from_p.pos[0] == to_p.pos[0])){
+      if(vecMath.same2D(...to_piece.pos, ...mov.pos)){
+         if(to_piece.color == from_piece.color || (from_piece.type == "pawn" && from_piece.pos[0] == to_piece.pos[0])){
+            // do not attack own pieces
             mov.remove()
          }else if(mov.to){
+            // stop attack at the enemy piece
             mov.to.remove();
          }
       }

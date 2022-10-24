@@ -3,9 +3,9 @@ import * as vecMath from './math.mjs';
 import { tweens } from './animation.mjs';
 import { meshes } from "./mesh.mjs";
 import UI from "./ui.mjs";
-import { newBlankTex } from "./texture.mjs";
+import { init_shaders, main_shader_program, simple_shader_program } from "./shaders.mjs";
 
-export {setup, update, clickMeshes, rb, mouse, shaderProgram, enableBuffers, inputBuffer, gameUI, shaderProgramFromSource};
+export {setup, update, clickMeshes, rb, mouse, inputBuffer, gameUI, main_shader_program};
 
 const mouse = {
    states: {
@@ -18,81 +18,42 @@ const mouse = {
    dragging:false
 };
 const camera = new Camera(0,1.1,-15);
-const highlightcol = [0,1,0,1];
-const hovercol = [1,0,1,1];
-let canvas;
-let selected = 0;
-let shaderProgram;
-let fb;
+export let canvas;
 let inputBuffer;
 export let gl;
 let gameUI;
+
+
 
 async function setup(setupCallback, updateCallback){
    createCanvas();
    initgl();
 
-   shaderProgram = gl.createProgram();
+   // const vertSource_ui = await (await fetch("./ui/vertex.vs")).text();
+   // const fragSource_ui = await (await fetch("./ui/frag.vs")).text();
+   // gameUI = new UI(canvas, gl, vertSource_ui, fragSource_ui);
 
-   const vertSource = await (await fetch("vertex.vs")).text();
-   const fragSource = await (await fetch("frag.vs")).text();
+   await init_shaders();
 
-   const vertSource_ui = await (await fetch("./ui/vertex.vs")).text();
-   const fragSource_ui = await (await fetch("./ui/frag.vs")).text();
-   gameUI = new UI(canvas, gl, vertSource_ui, fragSource_ui);
-
-   shaderProgram = shaderProgramFromSource(vertSource, fragSource);
-   gl.useProgram(shaderProgram);
-
-   setupBuffers();
-   setupUniforms();
-   enableBuffers();
-
-   const vert_source_simple = await (await fetch("simple_vert.vs")).text();
-   const frag_source_simple = await (await fetch("simple_frag.vs")).text();
-   const simpleShader = shaderProgramFromSource(vert_source_simple, frag_source_simple);
-   const texture = newBlankTex("buffer", simpleShader, canvas.width, canvas.height);
-   const main_buffer = gl.createFramebuffer();
-   gl.bindFramebuffer(gl.FRAMEBUFFER, main_buffer);
-   gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+   rb = gl.createRenderbuffer();
+   gl.bindRenderbuffer(gl.RENDERBUFFER, rb);
+   gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, gl.canvas.width, gl.canvas.height);
+   gl.bindRenderbuffer(gl.RENDERBUFFER, null);
 
    await setupCallback();
+
    meshes.sort(function(a, b){
       if(a.geometry.name < b.geometry.name) { return -1; }
       if(a.geometry.name > b.geometry.name) { return 1; }
       return 0;
   });
+
    window.setInterval(()=>{
       update();
       updateCallback();
    });
 
    render();
-}
-
-let Pmatrix;
-let Mmatrix;
-let baseColor;
-let Vmatrix;
-let texIndexLocation;
-let rotMat;
-let proj_matrix;
-function setupUniforms(){
-   Pmatrix = gl.getUniformLocation(shaderProgram, "Pmatrix");
-   Vmatrix = gl.getUniformLocation(shaderProgram, "Vmatrix");
-   Mmatrix = gl.getUniformLocation(shaderProgram, "Mmatrix");
-   texIndexLocation = gl.getUniformLocation(shaderProgram, "TexIndex");
-   baseColor = gl.getUniformLocation(shaderProgram, "baseColor");
-   rotMat = gl.getUniformLocation(shaderProgram, "rotationMat");
-   let hoverColor = gl.getUniformLocation(shaderProgram, "hoverColor");
-
-   proj_matrix = vecMath.get_projection(30, canvas.width/canvas.height, 1, 100);
-   const mov_matrix = [1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1];
-
-   gl.uniformMatrix4fv(Pmatrix, false, proj_matrix);
-   gl.uniformMatrix4fv(Mmatrix, false, mov_matrix);
-   gl.uniform4fv(baseColor, highlightcol);
-   gl.uniform4fv(hoverColor, hovercol);
 }
 
 function update(){
@@ -113,30 +74,24 @@ function update(){
    }
 }
 
-const bufferIfNotEqual = (buffer_name, new_data, old_data) => {
-   if(!old_data || new_data !== old_data){
-      const bufValue = (buffer_name == "index_buffer")? gl.ELEMENT_ARRAY_BUFFER : gl.ARRAY_BUFFER;
-      gl.bindBuffer(bufValue, buffers[buffer_name]);
-      gl.bufferData(bufValue, new_data, gl.STATIC_DRAW);
-   }
-};
-
 function render() {
-   gl.uniformMatrix4fv(Vmatrix, false, camera.transform);
+   main_shader_program.use();
+
+   main_shader_program.setUniform("Vmatrix", camera.transform);
 
    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
    let last = {geometry:{}};
    meshes.forEach(mesh=>{
-      bufferIfNotEqual("vertex_buffer", mesh.geometry.vertices, last.geometry.vertices);
-      bufferIfNotEqual("index_buffer", mesh.geometry.indices, last.geometry.indices);
-      bufferIfNotEqual("normal_buffer", mesh.geometry.normals, last.geometry.normals);
-      bufferIfNotEqual("tex_buffer", mesh.geometry.texcoors, last.geometry.texcoors);
+     main_shader_program.buffer("vertex_buffer", mesh.geometry.vertices);
+     main_shader_program.buffer("index_buffer", mesh.geometry.indices);
+     main_shader_program.buffer("normal_buffer", mesh.geometry.normals);
+     main_shader_program.buffer("tex_buffer", mesh.geometry.texcoors);
 
-      gl.uniformMatrix4fv(Mmatrix, false, mesh.transform);
-      gl.uniformMatrix4fv(rotMat, false, mesh.rotationMat);
+      main_shader_program.setUniform("Mmatrix",mesh.transform);
+      main_shader_program.setUniform("rotationMat", mesh.rotationMat);
       if(last.texindex != mesh.texindex){ 
-         gl.uniform1f(texIndexLocation, mesh.texindex);
+         main_shader_program.setUniform("TexIndex", mesh.texindex);
       }
 
       gl.drawElements(gl.TRIANGLES, mesh.geometry.indices.length, gl.UNSIGNED_SHORT, 0);
@@ -144,42 +99,26 @@ function render() {
       last = mesh;
    });
 
-   gameUI.render(buffers, Mmatrix, Vmatrix, texIndexLocation);
+   // gameUI.render(buffers, Mmatrix, Vmatrix, texIndexLocation);
+
+   simple_shader_program.use();
+   simple_shader_program.loadTextureIntoSampler("buffer", main_shader_program.antialiasing_tex);
+
+   gl.bindBuffer(gl.ARRAY_BUFFER, simple_shader_program.buffers["vertex_buffer"]);
+   gl.bufferData(gl.ARRAY_BUFFER, simple_shader_program.renderOb.vertices, gl.STATIC_DRAW);
+
+   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, simple_shader_program.buffers["index_buffer"]);
+   gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, simple_shader_program.renderOb.indices, gl.STATIC_DRAW);
+
+   gl.drawElements(gl.TRIANGLES, simple_shader_program.renderOb.indices.length, gl.UNSIGNED_SHORT, 0);
+
+   simple_shader_program.loadImageIntoSampler("vignette.png", "buffer");
+   gl.drawElements(gl.TRIANGLES, simple_shader_program.renderOb.indices.length, gl.UNSIGNED_SHORT, 0);
 
    window.requestAnimationFrame(render);
 }
 
-const buffers = {};
 let rb;
-function setupBuffers(){
-   buffers["vertex_buffer"] = gl.createBuffer ();
-   buffers["index_buffer"] = gl.createBuffer ();
-   buffers["normal_buffer"] = gl.createBuffer ();
-   buffers["tex_buffer"] = gl.createBuffer ();
-
-   rb = gl.createRenderbuffer();
-   gl.bindRenderbuffer(gl.RENDERBUFFER, rb);
-   gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, gl.canvas.width, gl.canvas.height);
-   gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, rb);
-   gl.bindRenderbuffer(gl.RENDERBUFFER, null);
-}
-
-function enableBuffers(){
-   gl.bindBuffer(gl.ARRAY_BUFFER, buffers["vertex_buffer"]);
-   const position = gl.getAttribLocation(shaderProgram, "position");
-   gl.vertexAttribPointer(position, 3, gl.FLOAT, false,0,0) ;
-   gl.enableVertexAttribArray(position);
-
-   gl.bindBuffer(gl.ARRAY_BUFFER, buffers["normal_buffer"]);
-   const normal = gl.getAttribLocation(shaderProgram, "normal");
-   gl.vertexAttribPointer(normal, 3, gl.FLOAT, false,0,0);
-   gl.enableVertexAttribArray(normal);
-
-   gl.bindBuffer(gl.ARRAY_BUFFER, buffers["tex_buffer"]);
-   const texcoor = gl.getAttribLocation(shaderProgram, "texcoor");
-   gl.vertexAttribPointer(texcoor, 2, gl.FLOAT, false,0,0);
-   gl.enableVertexAttribArray(texcoor);
-}
 
 function createCanvas(){
    canvas = document.getElementById('my_Canvas');
@@ -217,50 +156,38 @@ function createCanvas(){
    });
 }
 
-function shaderProgramFromSource(vertSource, fragSource){
-   const sp = gl.createProgram();
-   const vertShader = gl.createShader(gl.VERTEX_SHADER);
-   gl.shaderSource(vertShader, vertSource);
-   gl.compileShader(vertShader);
-   gl.attachShader(sp, vertShader);
-         
-   const fragShader = gl.createShader(gl.FRAGMENT_SHADER);
-   gl.shaderSource(fragShader, fragSource);
-   gl.compileShader(fragShader);
-   gl.attachShader(sp, fragShader);
-
-   gl.linkProgram(sp);
-   return sp;
-}
-
 function initgl(){
-   gl = canvas.getContext('experimental-webgl',{preserveDrawingBuffer: true});
+   gl = canvas.getContext('experimental-webgl',{});
    gl.enable(gl.DEPTH_TEST);
+   gl.enable(gl.BLEND);
    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
    gl.depthFunc(gl.LEQUAL);
    gl.clearColor(0.5, 0.5, 0.5, 0.9);
-   gl.clearDepth(1.0);
 
    gl.viewport(0.0, 0.0, canvas.width*2, canvas.height*2);
+
+   // gl =  WebGLDebugUtils.makeDebugContext(gl, throwOnGLError, logAndValidate);
 }
 
 function clickMeshes(e){
+   main_shader_program.use();
    gl.bindRenderbuffer(gl.RENDERBUFFER, rb);
+   gl.viewport(0.0, 0.0, canvas.width, canvas.height);
    
    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-   gl.uniform1f(texIndexLocation, 3);
-   gl.uniformMatrix4fv(Vmatrix, false, camera.transform);
+   main_shader_program.setUniform("TexIndex", 3);
+   main_shader_program.setUniform("Vmatrix", camera.transform);
 
    let last = {geometry:{}};
    meshes.forEach(mesh=>{
-      bufferIfNotEqual("vertex_buffer", mesh.geometry.vertices, last.geometry.vertices);
-      bufferIfNotEqual("index_buffer", mesh.geometry.indices, last.geometry.indices);
-      bufferIfNotEqual("normal_buffer", mesh.geometry.normals, last.geometry.normals);
-      bufferIfNotEqual("tex_buffer", mesh.geometry.texcoors, last.geometry.texcoors);
+      main_shader_program.buffer("vertex_buffer", mesh.geometry.vertices);
+      main_shader_program.buffer("index_buffer", mesh.geometry.indices);
+      main_shader_program.buffer("normal_buffer", mesh.geometry.normals);
+      main_shader_program.buffer("tex_buffer", mesh.geometry.texcoors);
 
-      gl.uniformMatrix4fv(Mmatrix, false, mesh.transform);
-      gl.uniform4fv(baseColor, [mesh.index/255,0,0,1]);
+      main_shader_program.setUniform("Mmatrix", mesh.transform);
+      main_shader_program.setUniform("baseColor", [mesh.index/255,0,0,1]);
 
       gl.drawElements(gl.TRIANGLES, mesh.geometry.indices.length, gl.UNSIGNED_SHORT, 0);
 
@@ -275,11 +202,46 @@ function clickMeshes(e){
       pixel
    );
       
-   gl.uniform4fv(baseColor, highlightcol);
-   gl.uniformMatrix4fv(Mmatrix, false, [1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1]);
+   main_shader_program.setUniform("baseColor", [0,1,0,1]);
+   main_shader_program.setUniform("Mmatrix", [1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1]);
    gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+   gl.viewport(0.0, 0.0, canvas.width*2, canvas.height*2);
 
    const index = pixel[0] + pixel[1] + pixel[2];
    
    return meshes.find(e=>e.index == index);
 }
+
+
+
+
+
+
+
+//-------------------DEBUG CODE-------------------
+
+import {WebGLDebugUtils} from "./webgl-debug.mjs";
+
+function throwOnGLError(err, funcName, args) {
+   throw WebGLDebugUtils.glEnumToString(err) + " was caused by call to: " + funcName;
+ };
+
+ function validateNoneOfTheArgsAreUndefined(functionName, args) {
+   for (var ii = 0; ii < args.length; ++ii) {
+     if (args[ii] === undefined) {
+       console.error("undefined passed to gl." + functionName + "(" +
+                      WebGLDebugUtils.glFunctionArgsToString(functionName, args) + ")");
+     }
+   }
+ } 
+
+ function logGLCall(functionName, args) {   
+   console.log("gl." + functionName + "(" + 
+      WebGLDebugUtils.glFunctionArgsToString(functionName, args) + ")");   
+} 
+
+function logAndValidate(functionName, args) {
+   logGLCall(functionName, args);
+   validateNoneOfTheArgsAreUndefined (functionName, args);
+}
+//-------------------END DEBUG CODE-------------------
