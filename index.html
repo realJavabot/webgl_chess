@@ -24,12 +24,12 @@
          window.onload = () =>{
             setup(async () => {
                const loadCalls = [
-                  loadGeometry("./models/knight.obj", "knight"),
-                  loadGeometry("./models/rook.obj", "rook"),
-                  loadGeometry("./models/pawn.obj", "pawn"),
-                  loadGeometry("./models/king.obj", "king"),
-                  loadGeometry("./models/bishop.obj", "bishop"),
-                  loadGeometry("./models/queen.obj", "queen"),
+                  loadGeometry("models/knight.obj", "knight"),
+                  loadGeometry("models/rook.obj", "rook"),
+                  loadGeometry("models/pawn.obj", "pawn"),
+                  loadGeometry("models/king.obj", "king"),
+                  loadGeometry("models/bishop.obj", "bishop"),
+                  loadGeometry("models/queen.obj", "queen"),
                   main_shader_program.loadImageIntoSampler("./chesstex.jpg", "uChessTex")
                ];
 

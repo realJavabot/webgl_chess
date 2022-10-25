@@ -42,6 +42,8 @@ class geo{
  }
 
  async function loadGeometry(path, name){
+   path = `/resources/${path}`;
+
    const tn = [];
    const tt = [];
    const obParams = new geoParams();
