@@ -1,0 +1,160 @@
+<!doctype html>
+<html>
+   <head>
+      <style>
+         body{
+            background-color:black;
+         }
+         canvas{
+            margin: auto;
+            display:block;
+         }
+      </style>
+   </head>
+   <body>
+      <canvas width = "1000" height = "600" id = "my_Canvas"></canvas>
+      <script type="module">
+         import * as vecMath from './js/math.mjs';
+         import { loadGeometry, geo, geoParams } from "./js/geometry.mjs";
+         import { mesh } from "./js/mesh.mjs";
+         import { setup, clickMeshes, mouse } from "./js/gameengine.mjs";
+         import { main_shader_program } from "./js/shaders.mjs";
+         import { pieces, square, squares, spawnPieces, taken, game_input } from "./js/gameObjects.mjs";
+
+         window.onload = () =>{
+            setup(async () => {
+               const loadCalls = [
+                  loadGeometry("./models/knight.obj", "knight"),
+                  loadGeometry("./models/rook.obj", "rook"),
+                  loadGeometry("./models/pawn.obj", "pawn"),
+                  loadGeometry("./models/king.obj", "king"),
+                  loadGeometry("./models/bishop.obj", "bishop"),
+                  loadGeometry("./models/queen.obj", "queen"),
+                  main_shader_program.loadImageIntoSampler("./chesstex.jpg", "uChessTex")
+               ];
+
+               return Promise.all(loadCalls).then(()=>{
+                  for(var i=0; i<8; i++){
+                     for(var j=0; j<8; j++){
+                        new square(i,j);
+                     }
+                  }
+
+                  // generate board edges
+                  const dim = 4;
+                  const diff = dim + .05;
+                  const offset = -1.2;
+                  const planeParams = new geoParams();
+
+                  let coords = [
+                     [-dim,-1,-dim, -diff,offset,-diff, dim,-1,-dim, diff,offset,-diff],
+                     [dim,-1,-dim, diff,offset,-diff, dim,-1,dim, diff,offset,diff],
+                     [dim,-1,dim, diff,offset,diff, -dim,-1,dim, -diff,offset,diff],
+                     [-dim,-1,dim, -diff,offset,diff, -dim,-1,-dim, -diff,offset,-diff]
+                  ];
+
+                  for(let i=0; i<4; i++){
+                     let j = i*4;
+                     planeParams.vertices.push(...coords[i]);
+                     planeParams.normals.push(0,1,0, 0,1,0, 0,1,0, 0,1,0);
+                     planeParams.indices.push(j,j+1,j+2, j+1,j+2,j+3);
+                     planeParams.texcoors.push(0,0, 0,0, 0,0, 0,0);
+                  }
+
+                  const planeGeo = new geo("board_back", planeParams);
+                  const planeMesh = new mesh("board_back");
+                  planeMesh.setTexIndex(2);
+
+                  spawnPieces();
+               });
+            }, () => {
+               pieces.forEach(piece=>{piece.update();});
+               taken.forEach(piece=>{piece.update();});
+            });
+         };
+
+         let canvas = document.getElementById("my_Canvas");
+         let availableMoves = [];
+
+         let colorMoves = ()=>{
+            availableMoves.forEach(mov=>{
+               squares[mov.pos[0]][mov.pos[1]].mesh.setTexIndex(3);
+               if(typeof mov.attacking !== 'undefined'){
+                  mov.attacking.mesh.setTexIndex(3);
+               }
+            })
+         };
+
+         let selected;
+         
+         canvas.addEventListener('mouseup', (event)=>{
+            if(!game_input){return;}
+            if(!mouse.dragging){
+               const clickedMesh = clickMeshes(event);
+               if(clickedMesh){
+                  if(!selected){
+                     if(clickedMesh.ob.type){
+                        availableMoves = clickedMesh.ob.showMoves();
+                        selected = clickedMesh.ob;
+                     }
+                  }else{
+                     if(clickedMesh.ob == selected){
+                        selected = 0;
+                        availableMoves = [];
+                     }else if(clickedMesh.texindex == 4){
+                        pieces.forEach(p=>{p.enpassant = false;})
+
+                        availableMoves.find(move => 
+                              vecMath.same2D(...clickedMesh.ob.pos, ...move.pos)
+                           || move.attacking == clickedMesh.ob
+                           ).perform();
+
+                        selected = 0;
+                        availableMoves = [];
+                     }else if(clickedMesh.ob.type){
+                        availableMoves = [];
+                        availableMoves = clickedMesh.ob.showMoves();
+                        selected = clickedMesh.ob;
+                     }
+                  }
+               }
+
+               pieces.forEach(piece=>piece.resetTexIndex());
+               squares.forEach(row=>
+                  row.forEach(square=>
+                     square.mesh.setTexIndex(0)
+                  )
+               );
+
+               colorMoves();
+            }
+         });
+
+         let mouseOver;
+         canvas.addEventListener("mousemove", (event) =>{
+            if(!game_input){return;}
+            if(!selected){return;}
+            if(mouse.state == mouse.states.UP){
+               const meshUnderMouse = clickMeshes(event);
+               if(!meshUnderMouse || mouseOver == meshUnderMouse){return;}
+
+               mouseOver = meshUnderMouse;
+
+               const move = availableMoves.find(mov => 
+                     vecMath.same2D(...meshUnderMouse.ob.pos, ...mov.pos)
+                  || mov.attacking == meshUnderMouse.ob
+               );
+               
+               colorMoves();
+               
+               if(move){
+                  squares[move.pos[0]][move.pos[1]].mesh.setTexIndex(4);
+                  if(move.attacking){
+                     move.attacking.mesh.setTexIndex(4);
+                  }
+               }
+            }
+         });
+      </script>
+   </body>
+</html>
