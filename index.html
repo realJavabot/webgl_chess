@@ -8,9 +8,31 @@
          }
          #container{
             margin: auto;
-            display:block;
+            display:flex;
             width:1000px;
             height:600px;
+            justify-content: center;
+         }
+         #overlay{
+            /* display: none; */
+         }
+         .top_left{
+            position:absolute;
+            top:0;
+            left:0;
+            padding:20px;
+            color:white;
+            font-size: 25px;
+            display:none;
+         }
+         .top_right{
+            position:absolute;
+            top:0;
+            right:0;
+            padding:20px;
+            color:white;
+            font-size: 25px;
+            display:none;
          }
       </style>
    </head>
@@ -34,10 +56,17 @@
                <button id="btn_gen_room">CREATE ROOM</button>
             </div>
             <div class="menu" id="menu_join_game">
-               <input type="text" placeholder="ROOM ID">
-               <button>JOIN</button>
+               <input type="text" place2holder="ROOM ID" id="inp_room_id">
+               <button id="btn_join_room">JOIN</button>
             </div>
          </div>
+         <div class="top_left" id="room_id">
+            Room ID:
+         </div>
+         <div class="top_right" id="exit">
+            <button id="btn_exit" class="btn_back">exit</button>
+         </div>
+         <div class="top_middle" id="error_alert"></div>
       </div>
       <script type="module">
          import * as vecMath from './js/math.mjs';
@@ -47,7 +76,7 @@
          import { main_shader_program } from "./js/shaders.mjs";
          import { pieces, square, squares, spawnPieces, taken, game_input } from "./js/gameObjects.mjs";
          import { setupOverlay } from "./js/overlay.mjs";
-         import { setupNetworking } from './js/network.mjs';
+         import { setupNetworking, movePiece } from './js/network.mjs';
 
          window.onload = () =>{
             setup(async () => {
@@ -136,10 +165,11 @@
                      }else if(clickedMesh.texindex == 4){
                         pieces.forEach(p=>{p.enpassant = false;})
 
-                        availableMoves.find(move => 
+                        const performed_move = availableMoves.find(move => 
                               vecMath.same2D(...clickedMesh.ob.pos, ...move.pos)
                            || move.attacking == clickedMesh.ob
-                           ).perform();
+                           );
+                        movePiece(performed_move.piece.pos, performed_move.pos);
 
                         selected = 0;
                         availableMoves = [];

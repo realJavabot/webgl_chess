@@ -1,4 +1,4 @@
-import {generateRoom} from './network.mjs';
+import {generateRoom, joinRoom, exitRoom} from './network.mjs';
 
 const MIDDLE_POS = "400px";
 const LEFT_POS = "-800px";
@@ -46,6 +46,17 @@ export function setupOverlay(){
     });
 
     document.getElementById("btn_gen_room").addEventListener('click', (ev)=>{
-        generateRoom();
+        generateRoom((document.getElementById("checkbox_color").checked)? "white" : "black");
+    });
+
+    document.getElementById("btn_join_room").addEventListener('click', (ev)=>{
+        joinRoom(document.getElementById("inp_room_id").value);
+    });
+
+    document.getElementById("btn_exit").addEventListener('click', (ev)=>{
+        document.getElementById("overlay").style.display = "flex";
+        document.getElementById("room_id").style.display = "none";
+        document.getElementById("exit").style.display = "none";
+        exitRoom();
     });
 }

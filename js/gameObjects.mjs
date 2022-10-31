@@ -160,7 +160,7 @@ class piece{
    game_input = false;
  }
 
- class move{
+ export class move{
     constructor(piece, pos, attacking, to){
       this.to = to;
       this.pos = pos;
@@ -401,4 +401,10 @@ function moveLocal(p,x,y){
     pieces.forEach(p=>{
        new piece(p.type, "white", p.pos[0], (p.pos[1])?6:7);
     });
+ }
+
+ export function resetBoard(){
+   taken.length = 0;
+   pieces.length = 0;
+   spawnPieces();
  }
