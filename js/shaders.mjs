@@ -49,7 +49,7 @@ class shader_program{
     }
  
     loadImageIntoSampler(path, uniform_name){
-      path = `/webgl_chess/resources/${path}`;
+      path = `/resources/${path}`;
        if(this.images[path]){
           this.loadTextureIntoSampler(uniform_name, this.images[path]);
           return;

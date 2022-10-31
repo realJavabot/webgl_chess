@@ -1,18 +1,44 @@
 <!doctype html>
 <html>
    <head>
+      <link rel="stylesheet" href="./css/overlay.css">
       <style>
          body{
             background-color:black;
          }
-         canvas{
+         #container{
             margin: auto;
             display:block;
+            width:1000px;
+            height:600px;
          }
       </style>
    </head>
    <body>
-      <canvas width = "1000" height = "600" id = "my_Canvas"></canvas>
+      <div id="container">
+         <canvas width = "1000" height = "600" id = "my_Canvas"></canvas>
+         <div id="overlay">
+            <div class="menu" id="menu_play" style="left:400px;">
+               <button id="btn_play">PLAY</button>
+            </div>
+            <div class="menu" id="menu_decide_game">
+               <button id="btn_new">NEW GAME</button>
+               <button id="btn_connect">CONNECT TO GAME</button>
+            </div>
+            <div class="menu" id="menu_new_game">
+               <label class="switch">
+                  <input type="checkbox" id="checkbox_color">
+                  <div class="in"><span>BLACK</span></div>
+                  <div class="out"><span>WHITE</span></div>
+               </label>
+               <button id="btn_gen_room">CREATE ROOM</button>
+            </div>
+            <div class="menu" id="menu_join_game">
+               <input type="text" placeholder="ROOM ID">
+               <button>JOIN</button>
+            </div>
+         </div>
+      </div>
       <script type="module">
          import * as vecMath from './js/math.mjs';
          import { loadGeometry, geo, geoParams } from "./js/geometry.mjs";
@@ -20,6 +46,8 @@
          import { setup, clickMeshes, mouse } from "./js/gameengine.mjs";
          import { main_shader_program } from "./js/shaders.mjs";
          import { pieces, square, squares, spawnPieces, taken, game_input } from "./js/gameObjects.mjs";
+         import { setupOverlay } from "./js/overlay.mjs";
+         import { setupNetworking } from './js/network.mjs';
 
          window.onload = () =>{
             setup(async () => {
@@ -66,6 +94,10 @@
                   planeMesh.setTexIndex(2);
 
                   spawnPieces();
+
+                  setupNetworking();
+
+                  setupOverlay();
                });
             }, () => {
                pieces.forEach(piece=>{piece.update();});
