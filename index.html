@@ -74,7 +74,7 @@
          import { mesh } from "./js/mesh.mjs";
          import { setup, clickMeshes, mouse } from "./js/gameengine.mjs";
          import { main_shader_program } from "./js/shaders.mjs";
-         import { pieces, square, squares, spawnPieces, taken, game_input } from "./js/gameObjects.mjs";
+         import { pieces, square, squares, spawnPieces, taken, game_input, resetBoard } from "./js/gameObjects.mjs";
          import { setupOverlay } from "./js/overlay.mjs";
          import { setupNetworking, movePiece } from './js/network.mjs';
 
@@ -91,38 +91,7 @@
                ];
 
                return Promise.all(loadCalls).then(()=>{
-                  for(var i=0; i<8; i++){
-                     for(var j=0; j<8; j++){
-                        new square(i,j);
-                     }
-                  }
-
-                  // generate board edges 
-                  const dim = 4;
-                  const diff = dim + .05;
-                  const offset = -1.2;
-                  const planeParams = new geoParams();
-
-                  let coords = [
-                     [-dim,-1,-dim, -diff,offset,-diff, dim,-1,-dim, diff,offset,-diff],
-                     [dim,-1,-dim, diff,offset,-diff, dim,-1,dim, diff,offset,diff],
-                     [dim,-1,dim, diff,offset,diff, -dim,-1,dim, -diff,offset,diff],
-                     [-dim,-1,dim, -diff,offset,diff, -dim,-1,-dim, -diff,offset,-diff]
-                  ];
-
-                  for(let i=0; i<4; i++){
-                     let j = i*4;
-                     planeParams.vertices.push(...coords[i]);
-                     planeParams.normals.push(0,1,0, 0,1,0, 0,1,0, 0,1,0);
-                     planeParams.indices.push(j,j+1,j+2, j+1,j+2,j+3);
-                     planeParams.texcoors.push(0,0, 0,0, 0,0, 0,0);
-                  }
-
-                  const planeGeo = new geo("board_back", planeParams);
-                  const planeMesh = new mesh("board_back");
-                  planeMesh.setTexIndex(2);
-
-                  spawnPieces();
+                  resetBoard();
 
                   setupNetworking();
 

@@ -5,6 +5,7 @@ import websockets
 import secrets
 import string
 import json
+import copy
 from enum import Enum
 
 class Color(Enum):
@@ -39,17 +40,17 @@ for row in state_init:
 def error(message):
     return {'type': 'error', 'message':message}
 
-def generate_room(websocket, color):
-    if color not in ['white', 'black']:
+def generate_room(websocket, _color):
+    if _color not in ['white', 'black']:
         return error('color not valid')
-    color = Color.WHITE if color == 'white' else Color.BLACK
+    color = Color.WHITE if _color == 'white' else Color.BLACK
 
     room_id = ''.join(secrets.choice(string.ascii_letters) for i in range(5))
-    room = {Color.BLACK: None, Color.WHITE: None, 'turn': Color.WHITE, 'state': state.copy()}
+    room = {Color.BLACK: None, Color.WHITE: None, 'turn': Color.WHITE, 'state': copy.deepcopy(state)}
     room[color] = websocket
     rooms[room_id] = room
 
-    return {'type': 'gen_room_finish', 'value': room_id}
+    return {'type': 'gen_room_finish', 'value': room_id, 'color': _color}
 
 async def join_room(websocket, room_id):
     if room_id not in rooms:
@@ -58,14 +59,17 @@ async def join_room(websocket, room_id):
     room = rooms[room_id]
 
     send_message = lambda c : room[c].send(json.dumps({'type': 'message', 'message': 'Opponent has joined'}))
+    color = ""
     if room[Color.BLACK] == None:
         room[Color.BLACK] = websocket
+        color = "black"
         await send_message(Color.WHITE)
     else:
         room[Color.WHITE] = websocket
+        color = "white"
         await send_message(Color.BLACK)
     
-    return {'type': 'gen_room_finish', 'value': room_id}
+    return {'type': 'gen_room_finish', 'value': room_id, 'color': color}
 
 async def send_move(websocket, move):
     for key in rooms:
@@ -95,12 +99,17 @@ async def player_disconnected(websocket):
         if websocket in players:
             for p in players:
                 if p == websocket:
+                    if room[Color.BLACK] == websocket:
+                        room[Color.BLACK] = None
+                    if room[Color.WHITE] == websocket:
+                        room[Color.WHITE] = None
+                    if room[Color.WHITE] == room[Color.BLACK]:
+                        del rooms[key]
                     continue
                 try:
                     await p.send(json.dumps(error('opponent disconnected')))
                 except:
                     print("disconnected")
-            del rooms[key]
             break
 
 async def handler(websocket):
@@ -125,7 +134,7 @@ async def handler(websocket):
 
 
 async def main():
-    async with websockets.serve(handler, '', 8001):
+    async with websockets.serve(handler, '10.0.0.221', 8001):
         await asyncio.Future()  # run forever
 
 

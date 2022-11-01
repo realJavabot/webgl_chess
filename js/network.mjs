@@ -1,14 +1,14 @@
-import {move, pieces} from './gameObjects.mjs';
-import {resetBoard} from './gameObjects.mjs';
+import {move, pieces, resetBoard} from './gameObjects.mjs';
+import {camera} from './gameengine.mjs';
 let socket;
 
 export function setupNetworking(){
-    socket = new WebSocket('ws://localhost:8001/');
+    socket = new WebSocket('ws://10.0.0.221:8001/');
     socket.addEventListener("message", ({data}) => {
         const event = JSON.parse(data);
         console.log(event);
         switch(event.type){
-            case 'gen_room_finish': setupRoom(event.value); break;
+            case 'gen_room_finish': setupRoom(event.value, event.color); break;
             case 'piece_moved': movePieceLocal(event.move); break;
             case 'error': displayError(event.message); break;
             case 'message': displayError(event.message); break;
@@ -49,11 +49,17 @@ function displayError(message){
     }
 }
 
-function setupRoom(id){
+function setupRoom(id, color){
     document.getElementById("overlay").style.display = "none";
     document.getElementById("room_id").style.display = "block";
     document.getElementById("exit").style.display = "block";
     document.getElementById("room_id").innerText = `Room ID: ${id}`;
+
+    if(color == "black"){
+        camera.setOrbitRotation(Math.PI,1.1);
+    }else{
+        camera.setOrbitRotation(0,1.1);
+    }
 }
 
 export function exitRoom(){
