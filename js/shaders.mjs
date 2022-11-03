@@ -2,8 +2,8 @@ import { gl, canvas } from "./gameengine.mjs";
 import * as vecMath from './math.mjs';
 import { newBlankColorTex } from "./texture.mjs";
 
-const highlightcol = [0,1,0,1];
-const hovercol = [1,0,1,1];
+const hovercol = [147,225,139,255].map(v=>v/255);
+const highlightcol = [247,225,139,255].map(v=>v/255);
 let texture_count = 0;
 
 let current_shader_program = null;
