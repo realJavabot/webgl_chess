@@ -46,6 +46,7 @@
             <div class="menu" id="menu_decide_game">
                <button id="btn_new">NEW GAME</button>
                <button id="btn_connect">CONNECT TO GAME</button>
+               <button id="btn_demo">DEMO</button>
             </div>
             <div class="menu" id="menu_new_game">
                <label class="switch">
@@ -72,7 +73,7 @@
          import * as vecMath from './js/math.mjs';
          import { loadGeometry, geo, geoParams } from "./js/geometry.mjs";
          import { mesh } from "./js/mesh.mjs";
-         import { setup, clickMeshes, mouse } from "./js/gameengine.mjs";
+         import { setup, clickMeshes, mouse, singleplayer } from "./js/gameengine.mjs";
          import { main_shader_program } from "./js/shaders.mjs";
          import { pieces, square, squares, spawnPieces, taken, game_input, resetBoard } from "./js/gameObjects.mjs";
          import { setupOverlay } from "./js/overlay.mjs";
@@ -138,7 +139,11 @@
                               vecMath.same2D(...clickedMesh.ob.pos, ...move.pos)
                            || move.attacking == clickedMesh.ob
                            );
-                        movePiece(performed_move.piece.pos, performed_move.pos);
+                        if(singleplayer){
+                           performed_move.perform();
+                        }else{
+                           movePiece(performed_move.piece.pos, performed_move.pos);
+                        }
 
                         selected = 0;
                         availableMoves = [];

@@ -22,6 +22,7 @@ export let canvas;
 let inputBuffer;
 export let gl;
 let gameUI;
+export let singleplayer = false;
 
 
 
@@ -212,7 +213,13 @@ function clickMeshes(e){
    return meshes.find(e=>e.index == index);
 }
 
+export function singleplayer_false(){
+   singleplayer = false;
+}
 
+export function demoRoom(){
+   singleplayer = true;
+}
 
 
 

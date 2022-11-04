@@ -1,4 +1,5 @@
 import {generateRoom, joinRoom, exitRoom} from './network.mjs';
+import {demoRoom, singleplayer} from './gameengine.mjs';
 
 const MIDDLE_POS = "400px";
 const LEFT_POS = "-800px";
@@ -51,6 +52,12 @@ export function setupOverlay(){
 
     document.getElementById("btn_join_room").addEventListener('click', (ev)=>{
         joinRoom(document.getElementById("inp_room_id").value);
+    });
+
+    document.getElementById("btn_demo").addEventListener('click', (ev)=>{
+        document.getElementById("overlay").style.display = "none";
+        document.getElementById("exit").style.display = "block";
+        demoRoom();
     });
 
     document.getElementById("btn_exit").addEventListener('click', (ev)=>{

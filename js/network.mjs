@@ -1,5 +1,5 @@
 import {move, pieces, resetBoard} from './gameObjects.mjs';
-import {camera} from './gameengine.mjs';
+import {camera, singleplayer_false} from './gameengine.mjs';
 import {IP} from './constants.mjs';
 let socket;
 
@@ -65,5 +65,6 @@ function setupRoom(id, color){
 
 export function exitRoom(){
     socket.send(JSON.stringify({type: "exit_room"}));
+    singleplayer_false();
     resetBoard();
-}
+}   
