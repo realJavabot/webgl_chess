@@ -1,10 +1,10 @@
 import {move, pieces, resetBoard} from './gameObjects.mjs';
 import {camera, singleplayer_false} from './gameengine.mjs';
-import {IP} from './constants.mjs';
+import {IP, PORT} from './constants.mjs';
 let socket;
 
 export function setupNetworking(){
-    socket = new WebSocket(`ws://${IP}:8001/`);
+    socket = new WebSocket(`ws://${IP}:${PORT}/`);
     socket.addEventListener("message", ({data}) => {
         const event = JSON.parse(data);
         console.log(event);
