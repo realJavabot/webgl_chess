@@ -34,11 +34,24 @@
             font-size: 25px;
             display:none;
          }
+         .bottom_center{
+            text-align: center;
+            font-size: 25px;
+            color: rgb(207, 207, 207);
+            position:absolute;
+            bottom: 0px;
+            padding:10px 0 20px 0;
+            width:99%;
+            background-color: black;
+         }
+         a{
+            color:blueviolet;
+         }
       </style>
    </head>
    <body>
       <div id="container">
-         <canvas width = "1000" height = "600" id = "my_Canvas"></canvas>
+         <canvas width = "800" height = "600" id = "my_Canvas"></canvas>
          <div id="overlay">
             <div class="menu" id="menu_play" style="left:400px;">
                <button id="btn_play">PLAY</button>
@@ -68,6 +81,9 @@
             <button id="btn_exit" class="btn_back">exit</button>
          </div>
          <div class="top_middle" id="error_alert"></div>
+      </div>
+      <div class="bottom_center">
+         Michael Tchistopolskii, 2022 - <a href='https://github.com/realJavabot/webgl_chess'>https://github.com/realJavabot/webgl_chess</a>
       </div>
       <script type="module">
          import * as vecMath from './js/math.mjs';
