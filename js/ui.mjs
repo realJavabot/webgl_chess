@@ -1,6 +1,6 @@
-import { newBlankColorTex } from "./texture.mjs";
-import { gl } from "./gameengine.mjs";
-import { simple_shader_program } from "./shaders.mjs";
+import { newBlankColorTex } from '/webgl_chess/js/texture.mjs';
+import { gl } from '/webgl_chess/js/gameengine.mjs';
+import { simple_shader_program } from '/webgl_chess/js/shaders.mjs';
 
 const states = {BASE:0, MOUSEOVER:1};
 let update_ui = false;
@@ -25,7 +25,7 @@ export default class UI{
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.texture, 0);
         
         ui_elements.push(new UI_Button(0,0,.1,.1), new UI_Square(-.5,0,.1,.1,[0,1,0,.5]));
-        // ui_elements[0].onmousedown = ()=>{console.log("replaced!");};
+        // ui_elements[0].onmousedown = ()=>{console.log('replaced!');};
         this.update();
 
         this.renderOb = {
@@ -48,7 +48,7 @@ export default class UI{
                     });
         }
 
-        canvas.addEventListener("mousemove",event=>{
+        canvas.addEventListener('mousemove',event=>{
             elements_mouse_state(event).forEach(({el, mouse_in})=>{
                 if(el.state == states.BASE && mouse_in){
                     el.onmouseover();
@@ -58,7 +58,7 @@ export default class UI{
                 }
             });
         });
-        canvas.addEventListener("mousedown",event=>{
+        canvas.addEventListener('mousedown',event=>{
             elements_mouse_state(event)
                 .filter(({mouse_in}) => mouse_in)
                 .forEach(({el}) => el.onmousedown());
@@ -83,12 +83,12 @@ export default class UI{
         gl.bindBuffer(gl.ARRAY_BUFFER, this.vBuffer);
 
         // have to re-enable relevant attributes when switching from other shader program
-        const posAttribLoc = gl.getAttribLocation(this.sp, "position");
+        const posAttribLoc = gl.getAttribLocation(this.sp, 'position');
         gl.vertexAttribPointer(posAttribLoc, 2, gl.FLOAT, false, 0, 0);
         gl.enableVertexAttribArray(posAttribLoc);
 
-        const pMatLoc = gl.getUniformLocation(this.sp, "Pmatrix");
-        const baseColLocation = gl.getUniformLocation(this.sp, "baseColor");
+        const pMatLoc = gl.getUniformLocation(this.sp, 'Pmatrix');
+        const baseColLocation = gl.getUniformLocation(this.sp, 'baseColor');
 
         ui_elements.forEach(el=>{
             gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(el.vertices), gl.STATIC_DRAW);
@@ -117,15 +117,15 @@ export default class UI{
         }
 
         const buffer_data = (buffer_name, data) => {
-            const bufValue = (buffer_name == "index_buffer")? gl.ELEMENT_ARRAY_BUFFER : gl.ARRAY_BUFFER;
+            const bufValue = (buffer_name == 'index_buffer')? gl.ELEMENT_ARRAY_BUFFER : gl.ARRAY_BUFFER;
             gl.bindBuffer(bufValue, buffers[buffer_name]);
             gl.bufferData(bufValue, data, gl.STATIC_DRAW);
          };
 
-         buffer_data("vertex_buffer", this.renderOb.vertices);
-         buffer_data("index_buffer", this.renderOb.indices);
-         buffer_data("normal_buffer", this.renderOb.normals);
-         buffer_data("tex_buffer", this.renderOb.tex);
+         buffer_data('vertex_buffer', this.renderOb.vertices);
+         buffer_data('index_buffer', this.renderOb.indices);
+         buffer_data('normal_buffer', this.renderOb.normals);
+         buffer_data('tex_buffer', this.renderOb.tex);
 
         gl.uniformMatrix4fv(Mmatrix, false, this.renderOb.mmat);
         gl.uniformMatrix4fv(Vmatrix, false, this.renderOb.vmat);
@@ -233,7 +233,7 @@ class UI_Button extends UI_Square{
         this.state = states.BASE;
     }
     onmousedown(){
-        console.log("button pressed");
+        console.log('button pressed');
     }
     contains(x,y){
         return (

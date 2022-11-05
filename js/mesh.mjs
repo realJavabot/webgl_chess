@@ -1,5 +1,5 @@
-import transformObject from "./transformObject.mjs";
-import { geos } from "./geometry.mjs"; 
+import transformObject from '/webgl_chess/js/transformObject.mjs';
+import { geos } from '/webgl_chess/js/geometry.mjs'; 
 export {mesh, meshes, generateMeshBuffers, meshbuffers};
 const meshes = [];
 const meshbuffers = [];

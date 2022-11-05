@@ -1,9 +1,9 @@
-import Camera from "./camera.mjs";
-import * as vecMath from './math.mjs';
-import { tweens } from './animation.mjs';
-import { meshes } from "./mesh.mjs";
-import UI from "./ui.mjs";
-import { init_shaders, main_shader_program, simple_shader_program } from "./shaders.mjs";
+import Camera from '/webgl_chess/js/camera.mjs';
+import * as vecMath from '/webgl_chess/js/math.mjs';
+import { tweens } from '/webgl_chess/js/animation.mjs';
+import { meshes } from '/webgl_chess/js/mesh.mjs';
+import UI from '/webgl_chess/js/ui.mjs';
+import { init_shaders, main_shader_program, simple_shader_program } from '/webgl_chess/js/shaders.mjs';
 
 export {setup, update, clickMeshes, rb, mouse, inputBuffer, gameUI, main_shader_program, camera};
 
@@ -30,8 +30,8 @@ async function setup(setupCallback, updateCallback){
    createCanvas();
    initgl();
 
-   // const vertSource_ui = await (await fetch("./ui/vertex.vs")).text();
-   // const fragSource_ui = await (await fetch("./ui/frag.vs")).text();
+   // const vertSource_ui = await (await fetch('./ui/vertex.vs')).text();
+   // const fragSource_ui = await (await fetch('./ui/frag.vs')).text();
    // gameUI = new UI(canvas, gl, vertSource_ui, fragSource_ui);
 
    await init_shaders();
@@ -78,21 +78,21 @@ function update(){
 function render() {
    main_shader_program.use();
 
-   main_shader_program.setUniform("Vmatrix", camera.transform);
+   main_shader_program.setUniform('Vmatrix', camera.transform);
 
    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
    let last = {geometry:{}};
    meshes.forEach(mesh=>{
-     main_shader_program.buffer("vertex_buffer", mesh.geometry.vertices);
-     main_shader_program.buffer("index_buffer", mesh.geometry.indices);
-     main_shader_program.buffer("normal_buffer", mesh.geometry.normals);
-     main_shader_program.buffer("tex_buffer", mesh.geometry.texcoors);
+     main_shader_program.buffer('vertex_buffer', mesh.geometry.vertices);
+     main_shader_program.buffer('index_buffer', mesh.geometry.indices);
+     main_shader_program.buffer('normal_buffer', mesh.geometry.normals);
+     main_shader_program.buffer('tex_buffer', mesh.geometry.texcoors);
 
-      main_shader_program.setUniform("Mmatrix",mesh.transform);
-      main_shader_program.setUniform("rotationMat", mesh.rotationMat);
+      main_shader_program.setUniform('Mmatrix',mesh.transform);
+      main_shader_program.setUniform('rotationMat', mesh.rotationMat);
       if(last.texindex != mesh.texindex){ 
-         main_shader_program.setUniform("TexIndex", mesh.texindex);
+         main_shader_program.setUniform('TexIndex', mesh.texindex);
       }
 
       gl.drawElements(gl.TRIANGLES, mesh.geometry.indices.length, gl.UNSIGNED_SHORT, 0);
@@ -103,17 +103,17 @@ function render() {
    // gameUI.render(buffers, Mmatrix, Vmatrix, texIndexLocation);
 
    simple_shader_program.use();
-   simple_shader_program.loadTextureIntoSampler("buffer", main_shader_program.antialiasing_tex);
+   simple_shader_program.loadTextureIntoSampler('buffer', main_shader_program.antialiasing_tex);
 
-   gl.bindBuffer(gl.ARRAY_BUFFER, simple_shader_program.buffers["vertex_buffer"]);
+   gl.bindBuffer(gl.ARRAY_BUFFER, simple_shader_program.buffers['vertex_buffer']);
    gl.bufferData(gl.ARRAY_BUFFER, simple_shader_program.renderOb.vertices, gl.STATIC_DRAW);
 
-   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, simple_shader_program.buffers["index_buffer"]);
+   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, simple_shader_program.buffers['index_buffer']);
    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, simple_shader_program.renderOb.indices, gl.STATIC_DRAW);
 
    gl.drawElements(gl.TRIANGLES, simple_shader_program.renderOb.indices.length, gl.UNSIGNED_SHORT, 0);
 
-   simple_shader_program.loadImageIntoSampler("vignette.png", "buffer");
+   simple_shader_program.loadImageIntoSampler('vignette.png', 'buffer');
    gl.drawElements(gl.TRIANGLES, simple_shader_program.renderOb.indices.length, gl.UNSIGNED_SHORT, 0);
 
    window.requestAnimationFrame(render);
@@ -124,22 +124,22 @@ let rb;
 function createCanvas(){
    canvas = document.getElementById('my_Canvas');
 
-   canvas.addEventListener("mousedown", (e) =>{
+   canvas.addEventListener('mousedown', (e) =>{
       mouse.state = mouse.states.DOWN;
       mouse.x = e.clientX;
       mouse.y = e.clientY;
    });
 
-   canvas.addEventListener("mouseup", (e) =>{
+   canvas.addEventListener('mouseup', (e) =>{
       mouse.state = mouse.states.UP;
       mouse.dragging = false;
    });
 
-   canvas.addEventListener("wheel", (e) => {
+   canvas.addEventListener('wheel', (e) => {
       camera.setOrbitRadius(camera.radius + Math.sign(e.wheelDelta));
    });
 
-   canvas.addEventListener("mousemove", (e) =>{
+   canvas.addEventListener('mousemove', (e) =>{
       switch(mouse.state){
          case mouse.states.UP: {
          }break;
@@ -177,18 +177,18 @@ function clickMeshes(e){
    
    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-   main_shader_program.setUniform("TexIndex", 3);
-   main_shader_program.setUniform("Vmatrix", camera.transform);
+   main_shader_program.setUniform('TexIndex', 3);
+   main_shader_program.setUniform('Vmatrix', camera.transform);
 
    let last = {geometry:{}};
    meshes.forEach(mesh=>{
-      main_shader_program.buffer("vertex_buffer", mesh.geometry.vertices);
-      main_shader_program.buffer("index_buffer", mesh.geometry.indices);
-      main_shader_program.buffer("normal_buffer", mesh.geometry.normals);
-      main_shader_program.buffer("tex_buffer", mesh.geometry.texcoors);
+      main_shader_program.buffer('vertex_buffer', mesh.geometry.vertices);
+      main_shader_program.buffer('index_buffer', mesh.geometry.indices);
+      main_shader_program.buffer('normal_buffer', mesh.geometry.normals);
+      main_shader_program.buffer('tex_buffer', mesh.geometry.texcoors);
 
-      main_shader_program.setUniform("Mmatrix", mesh.transform);
-      main_shader_program.setUniform("baseColor", [mesh.index/255,0,0,1]);
+      main_shader_program.setUniform('Mmatrix', mesh.transform);
+      main_shader_program.setUniform('baseColor', [mesh.index/255,0,0,1]);
 
       gl.drawElements(gl.TRIANGLES, mesh.geometry.indices.length, gl.UNSIGNED_SHORT, 0);
 
@@ -203,8 +203,8 @@ function clickMeshes(e){
       pixel
    );
       
-   main_shader_program.setUniform("baseColor", [0,1,0,1]);
-   main_shader_program.setUniform("Mmatrix", [1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1]);
+   main_shader_program.setUniform('baseColor', [0,1,0,1]);
+   main_shader_program.setUniform('Mmatrix', [1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1]);
    gl.bindRenderbuffer(gl.RENDERBUFFER, null);
    gl.viewport(0.0, 0.0, canvas.width*2, canvas.height*2);
 
@@ -227,24 +227,24 @@ export function demoRoom(){
 
 //-------------------DEBUG CODE-------------------
 
-import {WebGLDebugUtils} from "./webgl-debug.mjs";
+import {WebGLDebugUtils} from '/webgl_chess/js/webgl-debug.mjs';
 
 function throwOnGLError(err, funcName, args) {
-   throw WebGLDebugUtils.glEnumToString(err) + " was caused by call to: " + funcName;
+   throw WebGLDebugUtils.glEnumToString(err) + ' was caused by call to: ' + funcName;
  };
 
  function validateNoneOfTheArgsAreUndefined(functionName, args) {
    for (var ii = 0; ii < args.length; ++ii) {
      if (args[ii] === undefined) {
-       console.error("undefined passed to gl." + functionName + "(" +
-                      WebGLDebugUtils.glFunctionArgsToString(functionName, args) + ")");
+       console.error('undefined passed to gl.' + functionName + '(' +
+                      WebGLDebugUtils.glFunctionArgsToString(functionName, args) + ')');
      }
    }
  } 
 
  function logGLCall(functionName, args) {   
-   console.log("gl." + functionName + "(" + 
-      WebGLDebugUtils.glFunctionArgsToString(functionName, args) + ")");   
+   console.log('gl.' + functionName + '(' + 
+      WebGLDebugUtils.glFunctionArgsToString(functionName, args) + ')');   
 } 
 
 function logAndValidate(functionName, args) {

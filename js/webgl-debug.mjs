@@ -3,7 +3,7 @@
 **
 ** Permission is hereby granted, free of charge, to any person obtaining a
 ** copy of this software and/or associated documentation files (the
-** "Materials"), to deal in the Materials without restriction, including
+** 'Materials'), to deal in the Materials without restriction, including
 ** without limitation the rights to use, copy, modify, merge, publish,
 ** distribute, sublicense, and/or sell copies of the Materials, and to
 ** permit persons to whom the Materials are furnished to do so, subject to
@@ -12,7 +12,7 @@
 ** The above copyright notice and this permission notice shall be included
 ** in all copies or substantial portions of the Materials.
 **
-** THE MATERIALS ARE PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+** THE MATERIALS ARE PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND,
 ** EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 ** MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
 ** IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
@@ -338,8 +338,8 @@ export let WebGLDebugUtils = function() {
     function glEnumToString(value) {
       checkInit();
       var name = glEnums[value];
-      return (name !== undefined) ? ("gl." + name) :
-          ("/*UNKNOWN WebGL ENUM*/ 0x" + value.toString(16) + "");
+      return (name !== undefined) ? ('gl.' + name) :
+          ('/*UNKNOWN WebGL ENUM*/ 0x' + value.toString(16) + '');
     }
     
     /**
@@ -381,9 +381,9 @@ export let WebGLDebugUtils = function() {
         }
       }
       if (value === null) {
-        return "null";
+        return 'null';
       } else if (value === undefined) {
-        return "undefined";
+        return 'undefined';
       } else {
         return value.toString();
       }
@@ -398,8 +398,8 @@ export let WebGLDebugUtils = function() {
      * @return {string} The arguments as a string.
      */
     function glFunctionArgsToString(functionName, args) {
-      // apparently we can't do args.join(",");
-      var argStr = "";
+      // apparently we can't do args.join(',');
+      var argStr = '';
       var numArgs = args.length;
       for (var ii = 0; ii < numArgs; ++ii) {
         argStr += ((ii == 0) ? '' : ', ') +
@@ -410,24 +410,24 @@ export let WebGLDebugUtils = function() {
     
     
     function makePropertyWrapper(wrapper, original, propertyName) {
-      //log("wrap prop: " + propertyName);
+      //log('wrap prop: ' + propertyName);
       wrapper.__defineGetter__(propertyName, function() {
         return original[propertyName];
       });
       // TODO(gmane): this needs to handle properties that take more than
       // one value?
       wrapper.__defineSetter__(propertyName, function(value) {
-        //log("set: " + propertyName);
+        //log('set: ' + propertyName);
         original[propertyName] = value;
       });
     }
     
     // Makes a function that calls a function on another object.
     function makeFunctionWrapper(original, functionName) {
-      //log("wrap fn: " + functionName);
+      //log('wrap fn: ' + functionName);
       var f = original[functionName];
       return function() {
-        //log("call: " + functionName);
+        //log('call: ' + functionName);
         var result = f.apply(original, arguments);
         return result;
       };
@@ -454,15 +454,15 @@ export let WebGLDebugUtils = function() {
       opt_err_ctx = opt_err_ctx || ctx;
       init(ctx);
       opt_onErrorFunc = opt_onErrorFunc || function(err, functionName, args) {
-            // apparently we can't do args.join(",");
-            var argStr = "";
+            // apparently we can't do args.join(',');
+            var argStr = '';
             var numArgs = args.length;
             for (var ii = 0; ii < numArgs; ++ii) {
               argStr += ((ii == 0) ? '' : ', ') +
                   glFunctionArgToString(functionName, numArgs, ii, args[ii]);
             }
-            error("WebGL error "+ glEnumToString(err) + " in "+ functionName +
-                  "(" + argStr + ")");
+            error('WebGL error '+ glEnumToString(err) + ' in '+ functionName +
+                  '(' + argStr + ')');
           };
     
       // Holds booleans for each GL error so after we get the error ourselves
@@ -654,7 +654,7 @@ export let WebGLDebugUtils = function() {
           if ((ctx instanceof WebGLRenderingContext) || (window.WebGL2RenderingContext && (ctx instanceof WebGL2RenderingContext))) {
             if (ctx != unwrappedContext_) {
               if (unwrappedContext_) {
-                throw "got different context"
+                throw 'got different context'
               }
               isWebGL2RenderingContext = window.WebGL2RenderingContext && (ctx instanceof WebGL2RenderingContext);
               unwrappedContext_ = ctx;
@@ -667,7 +667,7 @@ export let WebGLDebugUtils = function() {
       }(canvas.getContext);
     
       function wrapEvent(listener) {
-        if (typeof(listener) == "function") {
+        if (typeof(listener) == 'function') {
           return listener;
         } else {
           return function(info) {
@@ -711,12 +711,12 @@ export let WebGLDebugUtils = function() {
           while (unwrappedContext_.getError());
           clearErrors();
           glErrorShadow_[unwrappedContext_.CONTEXT_LOST_WEBGL] = true;
-          var event = makeWebGLContextEvent("context lost");
+          var event = makeWebGLContextEvent('context lost');
           var callbacks = onLost_.slice();
           setTimeout(function() {
-              //log("numCallbacks:" + callbacks.length);
+              //log('numCallbacks:' + callbacks.length);
               for (var ii = 0; ii < callbacks.length; ++ii) {
-                //log("calling callback:" + ii);
+                //log('calling callback:' + ii);
                 callbacks[ii](event);
               }
               if (restoreTimeout_ >= 0) {
@@ -733,7 +733,7 @@ export let WebGLDebugUtils = function() {
           if (onRestored_.length) {
             setTimeout(function() {
                 if (!canRestore_) {
-                  throw "can not restore. webglcontestlost listener did not call event.preventDefault";
+                  throw 'can not restore. webglcontestlost listener did not call event.preventDefault';
                 }
                 freeResources();
                 resetToInitialState(unwrappedContext_);
@@ -741,7 +741,7 @@ export let WebGLDebugUtils = function() {
                 numCalls_ = 0;
                 canRestore_ = false;
                 var callbacks = onRestored_.slice();
-                var event = makeWebGLContextEvent("context restored");
+                var event = makeWebGLContextEvent('context restored');
                 for (var ii = 0; ii < callbacks.length; ++ii) {
                   callbacks[ii](event);
                 }
@@ -752,7 +752,7 @@ export let WebGLDebugUtils = function() {
     
       canvas.loseContextInNCalls = function(numCalls) {
         if (contextLost_) {
-          throw "You can not ask a lost contet to be lost";
+          throw 'You can not ask a lost contet to be lost';
         }
         numCallsToLoseContext_ = numCalls_ + numCalls;
       };
@@ -805,7 +805,7 @@ export let WebGLDebugUtils = function() {
       function makeLostContextFunctionWrapper(ctx, functionName) {
         var f = ctx[functionName];
         return function() {
-          // log("calling:" + functionName);
+          // log('calling:' + functionName);
           // Only call the functions if the context is not lost.
           loseContextIfTime();
           if (!contextLost_) {
@@ -892,20 +892,20 @@ export let WebGLDebugUtils = function() {
         };
     
         var creationFunctions = [
-          "createBuffer",
-          "createFramebuffer",
-          "createProgram",
-          "createRenderbuffer",
-          "createShader",
-          "createTexture"
+          'createBuffer',
+          'createFramebuffer',
+          'createProgram',
+          'createRenderbuffer',
+          'createShader',
+          'createTexture'
         ];
         if (isWebGL2RenderingContext) {
           creationFunctions.push(
-            "createQuery",
-            "createSampler",
-            "fenceSync",
-            "createTransformFeedback",
-            "createVertexArray"
+            'createQuery',
+            'createSampler',
+            'fenceSync',
+            'createTransformFeedback',
+            'createVertexArray'
           );
         }
         for (var ii = 0; ii < creationFunctions.length; ++ii) {
@@ -925,37 +925,37 @@ export let WebGLDebugUtils = function() {
         }
     
         var functionsThatShouldReturnNull = [
-          "getActiveAttrib",
-          "getActiveUniform",
-          "getBufferParameter",
-          "getContextAttributes",
-          "getAttachedShaders",
-          "getFramebufferAttachmentParameter",
-          "getParameter",
-          "getProgramParameter",
-          "getProgramInfoLog",
-          "getRenderbufferParameter",
-          "getShaderParameter",
-          "getShaderInfoLog",
-          "getShaderSource",
-          "getTexParameter",
-          "getUniform",
-          "getUniformLocation",
-          "getVertexAttrib"
+          'getActiveAttrib',
+          'getActiveUniform',
+          'getBufferParameter',
+          'getContextAttributes',
+          'getAttachedShaders',
+          'getFramebufferAttachmentParameter',
+          'getParameter',
+          'getProgramParameter',
+          'getProgramInfoLog',
+          'getRenderbufferParameter',
+          'getShaderParameter',
+          'getShaderInfoLog',
+          'getShaderSource',
+          'getTexParameter',
+          'getUniform',
+          'getUniformLocation',
+          'getVertexAttrib'
         ];
         if (isWebGL2RenderingContext) {
           functionsThatShouldReturnNull.push(
-            "getInternalformatParameter",
-            "getQuery",
-            "getQueryParameter",
-            "getSamplerParameter",
-            "getSyncParameter",
-            "getTransformFeedbackVarying",
-            "getIndexedParameter",
-            "getUniformIndices",
-            "getActiveUniforms",
-            "getActiveUniformBlockParameter",
-            "getActiveUniformBlockName"
+            'getInternalformatParameter',
+            'getQuery',
+            'getQueryParameter',
+            'getSamplerParameter',
+            'getSyncParameter',
+            'getTransformFeedbackVarying',
+            'getIndexedParameter',
+            'getUniformIndices',
+            'getActiveUniforms',
+            'getActiveUniformBlockParameter',
+            'getActiveUniformBlockName'
           );
         }
         for (var ii = 0; ii < functionsThatShouldReturnNull.length; ++ii) {
@@ -972,21 +972,21 @@ export let WebGLDebugUtils = function() {
         }
     
         var isFunctions = [
-          "isBuffer",
-          "isEnabled",
-          "isFramebuffer",
-          "isProgram",
-          "isRenderbuffer",
-          "isShader",
-          "isTexture"
+          'isBuffer',
+          'isEnabled',
+          'isFramebuffer',
+          'isProgram',
+          'isRenderbuffer',
+          'isShader',
+          'isTexture'
         ];
         if (isWebGL2RenderingContext) {
           isFunctions.push(
-            "isQuery",
-            "isSampler",
-            "isSync",
-            "isTransformFeedback",
-            "isVertexArray"
+            'isQuery',
+            'isSampler',
+            'isSync',
+            'isTransformFeedback',
+            'isVertexArray'
           );
         }
         for (var ii = 0; ii < isFunctions.length; ++ii) {
@@ -1138,11 +1138,11 @@ export let WebGLDebugUtils = function() {
        *
        *    function throwOnGLError(err, funcName, args) {
        *      throw WebGLDebugUtils.glEnumToString(err) +
-       *            " was caused by call to " + funcName;
+       *            ' was caused by call to ' + funcName;
        *    };
        *
        *    ctx = WebGLDebugUtils.makeDebugContext(
-       *        canvas.getContext("webgl"), throwOnGLError);
+       *        canvas.getContext('webgl'), throwOnGLError);
        *
        * @param {!WebGLRenderingContext} ctx The webgl context to wrap.
        * @param {!function(err, funcName, args): void} opt_onErrorFunc The function

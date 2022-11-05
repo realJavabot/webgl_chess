@@ -1,4 +1,4 @@
-import * as vecMath from './math.mjs';
+import * as vecMath from '/webgl_chess/js/math.mjs';
 
 export default class transformObject{
     constructor(x=0, y=0, z=0, s=1){

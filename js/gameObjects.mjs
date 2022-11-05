@@ -1,8 +1,8 @@
-import { mesh, meshes } from "./mesh.mjs";
-import { geo, geoParams, geos } from "./geometry.mjs";
-import { Tween, Bezier, Path } from "./animation.mjs";
-import * as vecMath from "./math.mjs";
-import { gameUI } from "./gameengine.mjs";
+import { mesh, meshes } from '/webgl_chess/js/mesh.mjs';
+import { geo, geoParams, geos } from '/webgl_chess/js/geometry.mjs';
+import { Tween, Bezier, Path } from '/webgl_chess/js/animation.mjs';
+import * as vecMath from '/webgl_chess/js/math.mjs';
+import { gameUI } from '/webgl_chess/js/gameengine.mjs';
 export { piece, pieces, square, squares, spawnPieces, taken, game_input};
 
 const BOARDOFFSET = -1;
@@ -18,15 +18,15 @@ class piece{
       this.mesh.setTransform([1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1]);
       this.mesh.scale(pieceSize, pieceSize, pieceSize);
       this.mesh.translate(x-3.6,BOARDOFFSET - .2+z,y-3.5);
-      if(this.type == "knight" && this.color == "white"){
+      if(this.type == 'knight' && this.color == 'white'){
          this.mesh.rotateY(1.5);
          this.mesh.translate(0.1,0,.1);
       }
-      if(this.type == "knight" && this.color == "black"){
+      if(this.type == 'knight' && this.color == 'black'){
          this.mesh.rotateY(-1.5);
          this.mesh.translate(0.1,0,-.1);
       }
-      if(this.type == "bishop" && this.color == "black"){
+      if(this.type == 'bishop' && this.color == 'black'){
          this.mesh.rotateY(3.14);
          this.mesh.translate(.2,0,0);
       }
@@ -41,10 +41,10 @@ class piece{
        this.firstMove = true;
 
        this.mesh.ob = this;
-       this.mesh.texindex = (this.color == "white")? 1 : 2;
+       this.mesh.texindex = (this.color == 'white')? 1 : 2;
        this.path = false;
        this.tween = false;
-       this.bezier = this.type == "knight";
+       this.bezier = this.type == 'knight';
 
        pieces.push(this);
     }
@@ -66,9 +66,9 @@ class piece{
       }
       this.pos = [x,y];
 
-      if(this.type == "pawn" 
-         && (  (this.color == "black" && this.pos[1] == 7) 
-            || (this.color == "white" && this.pos[1] == 0))){
+      if(this.type == 'pawn' 
+         && (  (this.color == 'black' && this.pos[1] == 7) 
+            || (this.color == 'white' && this.pos[1] == 0))){
             upgrade_piece();
       }
    }
@@ -83,12 +83,12 @@ class piece{
     showMoves(){
        let moves;
        switch(this.type){
-          case "pawn": moves = movepawn(this); break;
-          case "rook": moves = moverook(this); break;
-          case "knight": moves = moveknight(this); break;
-          case "bishop": moves = movebishop(this); break;
-          case "queen": moves = movequeen(this); break;
-          case "king": moves = moveking(this); break;
+          case 'pawn': moves = movepawn(this); break;
+          case 'rook': moves = moverook(this); break;
+          case 'knight': moves = moveknight(this); break;
+          case 'bishop': moves = movebishop(this); break;
+          case 'queen': moves = movequeen(this); break;
+          case 'king': moves = moveking(this); break;
        }
        return moves.filter(e => e.pos[0] != -1 && e.pos[1] != -1);
     }
@@ -151,7 +151,7 @@ class piece{
     }
 
     resetTexIndex(){
-      this.mesh.setTexIndex((this.color == "white")? 1 : 2);
+      this.mesh.setTexIndex((this.color == 'white')? 1 : 2);
     }
  }
 
@@ -208,7 +208,7 @@ class piece{
  function clearAvailable(available, to_piece, from_piece){
    available.forEach(mov=>{
       if(vecMath.same2D(...to_piece.pos, ...mov.pos)){
-         if(to_piece.color == from_piece.color || (from_piece.type == "pawn" && from_piece.pos[0] == to_piece.pos[0])){
+         if(to_piece.color == from_piece.color || (from_piece.type == 'pawn' && from_piece.pos[0] == to_piece.pos[0])){
             // do not attack own pieces
             mov.remove()
          }else if(mov.to){
@@ -221,7 +221,7 @@ class piece{
 
  function movepawn(pawn){
    const pos = pawn.pos;
-   const dir = (pawn.color == "white")? -1 :  1;
+   const dir = (pawn.color == 'white')? -1 :  1;
    const available = [new move(pawn,[pos[0],pos[1]+1*dir])];
    if(pawn.firstMove){
       const secondMove = new pawnJump(pawn,[pos[0],pos[1]+2*dir]);
@@ -331,7 +331,7 @@ function moveLocal(p,x,y){
 
    if(piece.firstMove){
       pieces
-         .filter(p => p.type == "rook" && p.color == piece.color && p.firstMove)
+         .filter(p => p.type == 'rook' && p.color == piece.color && p.firstMove)
          .forEach(rook=>{
             let blocked = false;
             let dir = Math.sign(rook.pos[0] - piece.pos[0]);
@@ -366,7 +366,7 @@ function moveLocal(p,x,y){
        // a bit janky, but the engine compares the individual buffers for optimization
        // so reusing as many buffers as possible if beneficial
        this.geometry = new geo(
-         "square"+x+y,
+         'square'+x+y,
          new geoParams([],[offx,offy, offx+1,offy, offx+1,offy+1, offx,offy+1].map(e=>{return (e+4)/8;}))
        );
 
@@ -374,7 +374,7 @@ function moveLocal(p,x,y){
        this.geometry.normals = square_params.normals;
        this.geometry.indices = square_params.indices;
 
-       this.mesh = new mesh("square"+x+y);
+       this.mesh = new mesh('square'+x+y);
        this.mesh.ob = this;
        this.mesh.texindex = 0;
        this.mesh.translate(x - 3.5, BOARDOFFSET, y - 3.5);
@@ -388,18 +388,18 @@ function moveLocal(p,x,y){
 
  function spawnPieces(){
     for(let i=0; i<8; i++){
-       new piece("pawn","black",i,1);
+       new piece('pawn','black',i,1);
     }
-    new piece("rook","black",0,0);
-    new piece("rook","black",7,0);
-    new piece("knight","black",1,0);
-    new piece("knight","black",6,0);
-    new piece("bishop","black",2,0);
-    new piece("bishop","black",5,0);
-    new piece("queen","black",3,0);
-    new piece("king","black",4,0);
+    new piece('rook','black',0,0);
+    new piece('rook','black',7,0);
+    new piece('knight','black',1,0);
+    new piece('knight','black',6,0);
+    new piece('bishop','black',2,0);
+    new piece('bishop','black',5,0);
+    new piece('queen','black',3,0);
+    new piece('king','black',4,0);
     pieces.forEach(p=>{
-       new piece(p.type, "white", p.pos[0], (p.pos[1])?6:7);
+       new piece(p.type, 'white', p.pos[0], (p.pos[1])?6:7);
     });
  }
 
@@ -424,11 +424,11 @@ function moveLocal(p,x,y){
       planeParams.texcoors.push(0,0, 0,0, 0,0, 0,0);
    }
 
-   const planeGeo = new geo("board_back", planeParams);
+   const planeGeo = new geo('board_back', planeParams);
  }
 
  export function generateBoard(){
-   if(geos["board_back"] === undefined){
+   if(geos['board_back'] === undefined){
       generateBoardGeo();
    }
    for(var i=0; i<8; i++){
@@ -436,7 +436,7 @@ function moveLocal(p,x,y){
          new square(i,j);
       }
    }
-   const planeMesh = new mesh("board_back");
+   const planeMesh = new mesh('board_back');
    planeMesh.setTexIndex(2);
  }
 

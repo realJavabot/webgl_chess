@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
    <head>
-      <link rel="stylesheet" href="./css/overlay.css">
+      <link rel='stylesheet' href='./css/overlay.css'>
       <style>
          body{
             background-color:black;
@@ -50,61 +50,61 @@
       </style>
    </head>
    <body>
-      <div id="container">
-         <canvas width = "800" height = "600" id = "my_Canvas"></canvas>
-         <div id="overlay">
-            <div class="menu" id="menu_play" style="left:400px;">
-               <button id="btn_play">PLAY</button>
+      <div id='container'>
+         <canvas width = '800' height = '600' id = 'my_Canvas'></canvas>
+         <div id='overlay'>
+            <div class='menu' id='menu_play' style='left:400px;'>
+               <button id='btn_play'>PLAY</button>
             </div>
-            <div class="menu" id="menu_decide_game">
-               <button id="btn_new">NEW GAME</button>
-               <button id="btn_connect">CONNECT TO GAME</button>
-               <button id="btn_demo">DEMO</button>
+            <div class='menu' id='menu_decide_game'>
+               <button id='btn_new'>NEW GAME</button>
+               <button id='btn_connect'>CONNECT TO GAME</button>
+               <button id='btn_demo'>DEMO</button>
             </div>
-            <div class="menu" id="menu_new_game">
-               <label class="switch">
-                  <input type="checkbox" id="checkbox_color">
-                  <div class="in"><span>BLACK</span></div>
-                  <div class="out"><span>WHITE</span></div>
+            <div class='menu' id='menu_new_game'>
+               <label class='switch'>
+                  <input type='checkbox' id='checkbox_color'>
+                  <div class='in'><span>BLACK</span></div>
+                  <div class='out'><span>WHITE</span></div>
                </label>
-               <button id="btn_gen_room">CREATE ROOM</button>
+               <button id='btn_gen_room'>CREATE ROOM</button>
             </div>
-            <div class="menu" id="menu_join_game">
-               <input type="text" place2holder="ROOM ID" id="inp_room_id">
-               <button id="btn_join_room">JOIN</button>
+            <div class='menu' id='menu_join_game'>
+               <input type='text' place2holder='ROOM ID' id='inp_room_id'>
+               <button id='btn_join_room'>JOIN</button>
             </div>
          </div>
-         <div class="top_left" id="room_id">
+         <div class='top_left' id='room_id'>
             Room ID:
          </div>
-         <div class="top_right" id="exit">
-            <button id="btn_exit" class="btn_back">exit</button>
+         <div class='top_right' id='exit'>
+            <button id='btn_exit' class='btn_back'>exit</button>
          </div>
-         <div class="top_middle" id="error_alert"></div>
+         <div class='top_middle' id='error_alert'></div>
       </div>
-      <div class="bottom_center">
+      <div class='bottom_center'>
          Michael Tchistopolskii, 2022 - <a href='https://github.com/realJavabot/webgl_chess'>https://github.com/realJavabot/webgl_chess</a>
       </div>
-      <script type="module">
-         import * as vecMath from './js/math.mjs';
-         import { loadGeometry, geo, geoParams } from "./js/geometry.mjs";
-         import { mesh } from "./js/mesh.mjs";
-         import { setup, clickMeshes, mouse, singleplayer } from "./js/gameengine.mjs";
-         import { main_shader_program } from "./js/shaders.mjs";
-         import { pieces, square, squares, spawnPieces, taken, game_input, resetBoard } from "./js/gameObjects.mjs";
-         import { setupOverlay } from "./js/overlay.mjs";
-         import { setupNetworking, movePiece } from './js/network.mjs';
+      <script type='module'>
+         import * as vecMath from '/webgl_chess/js/js/math.mjs';
+         import { loadGeometry, geo, geoParams } from '/webgl_chess/js/js/geometry.mjs';
+         import { mesh } from '/webgl_chess/js/js/mesh.mjs';
+         import { setup, clickMeshes, mouse, singleplayer } from '/webgl_chess/js/js/gameengine.mjs';
+         import { main_shader_program } from '/webgl_chess/js/js/shaders.mjs';
+         import { pieces, square, squares, spawnPieces, taken, game_input, resetBoard } from '/webgl_chess/js/js/gameObjects.mjs';
+         import { setupOverlay } from '/webgl_chess/js/js/overlay.mjs';
+         import { setupNetworking, movePiece } from '/webgl_chess/js/js/network.mjs';
 
          window.onload = () =>{
             setup(async () => {
                const loadCalls = [
-                  loadGeometry("models/knight.obj", "knight"),
-                  loadGeometry("models/rook.obj", "rook"),
-                  loadGeometry("models/pawn.obj", "pawn"),
-                  loadGeometry("models/king.obj", "king"),
-                  loadGeometry("models/bishop.obj", "bishop"),
-                  loadGeometry("models/queen.obj", "queen"),
-                  main_shader_program.loadImageIntoSampler("./chesstex.jpg", "uChessTex")
+                  loadGeometry('models/knight.obj', 'knight'),
+                  loadGeometry('models/rook.obj', 'rook'),
+                  loadGeometry('models/pawn.obj', 'pawn'),
+                  loadGeometry('models/king.obj', 'king'),
+                  loadGeometry('models/bishop.obj', 'bishop'),
+                  loadGeometry('models/queen.obj', 'queen'),
+                  main_shader_program.loadImageIntoSampler('./chesstex.jpg', 'uChessTex')
                ];
 
                return Promise.all(loadCalls).then(()=>{
@@ -120,7 +120,7 @@
             });
          };
 
-         let canvas = document.getElementById("my_Canvas");
+         let canvas = document.getElementById('my_Canvas');
          let availableMoves = [];
 
          let colorMoves = ()=>{
@@ -183,7 +183,7 @@
          });
 
          let mouseOver;
-         canvas.addEventListener("mousemove", (event) =>{
+         canvas.addEventListener('mousemove', (event) =>{
             if(!game_input){return;}
             if(!selected){return;}
             if(mouse.state == mouse.states.UP){

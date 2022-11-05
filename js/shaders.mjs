@@ -1,6 +1,6 @@
-import { gl, canvas } from "./gameengine.mjs";
-import * as vecMath from './math.mjs';
-import { newBlankColorTex } from "./texture.mjs";
+import { gl, canvas } from '/webgl_chess/js/gameengine.mjs';
+import * as vecMath from '/webgl_chess/js/math.mjs';
+import { newBlankColorTex } from '/webgl_chess/js/texture.mjs';
 
 const hovercol = [147,225,139,255].map(v=>v/255);
 const highlightcol = [247,225,139,255].map(v=>v/255);
@@ -31,10 +31,10 @@ class shader_program{
        this.textures = [];
        this.images = {};
        this.buffers = {
-          "vertex_buffer": gl.createBuffer(),
-          "index_buffer": gl.createBuffer (),
-          "normal_buffer": gl.createBuffer (),
-          "tex_buffer": gl.createBuffer ()
+          'vertex_buffer': gl.createBuffer(),
+          'index_buffer': gl.createBuffer (),
+          'normal_buffer': gl.createBuffer (),
+          'tex_buffer': gl.createBuffer ()
        };
     }
  
@@ -122,7 +122,7 @@ class shader_program{
  
     buffer(buffer_name, value){
        if(value !== this.buffers[buffer_name]){
-          const bufValue = (buffer_name == "index_buffer")? gl.ELEMENT_ARRAY_BUFFER : gl.ARRAY_BUFFER;
+          const bufValue = (buffer_name == 'index_buffer')? gl.ELEMENT_ARRAY_BUFFER : gl.ARRAY_BUFFER;
           gl.bindBuffer(bufValue, this.buffers[buffer_name]);
           gl.bufferData(bufValue, value, gl.STATIC_DRAW);
        }
@@ -141,8 +141,8 @@ export let main_shader_program, simple_shader_program;
     main_shader_program = new shader_program();
     await main_shader_program.init(
         async function () {
-            const vertSource = await (await fetch("shaders/main/vert.vs")).text();
-            const fragSource = await (await fetch("shaders/main/frag.vs")).text();
+            const vertSource = await (await fetch('shaders/main/vert.vs')).text();
+            const fragSource = await (await fetch('shaders/main/frag.vs')).text();
             this.shaderProgram = shaderProgramFromSource(vertSource, fragSource);
             gl.useProgram(this.shaderProgram);
 
@@ -162,23 +162,23 @@ export let main_shader_program, simple_shader_program;
         function () {
             gl.bindFramebuffer(gl.FRAMEBUFFER, this.main_buffer);
 
-            this.setUniform("Pmatrix", this.proj_matrix);
-            this.setUniform("Mmatrix", [1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1]);
-            this.setUniform("baseColor", highlightcol);
-            this.setUniform("hoverColor", hovercol);
+            this.setUniform('Pmatrix', this.proj_matrix);
+            this.setUniform('Mmatrix', [1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1]);
+            this.setUniform('baseColor', highlightcol);
+            this.setUniform('hoverColor', hovercol);
             
-            gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers["vertex_buffer"]);
-            const position = gl.getAttribLocation(this.shaderProgram, "position");
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers['vertex_buffer']);
+            const position = gl.getAttribLocation(this.shaderProgram, 'position');
             gl.vertexAttribPointer(position, 3, gl.FLOAT, false,0,0) ;
             gl.enableVertexAttribArray(position);
 
-            gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers["normal_buffer"]);
-            const normal = gl.getAttribLocation(this.shaderProgram, "normal");
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers['normal_buffer']);
+            const normal = gl.getAttribLocation(this.shaderProgram, 'normal');
             gl.vertexAttribPointer(normal, 3, gl.FLOAT, false,0,0);
             gl.enableVertexAttribArray(normal);
 
-            gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers["tex_buffer"]);
-            const texcoor = gl.getAttribLocation(this.shaderProgram, "texcoor");
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers['tex_buffer']);
+            const texcoor = gl.getAttribLocation(this.shaderProgram, 'texcoor');
             gl.vertexAttribPointer(texcoor, 2, gl.FLOAT, false,0,0);
             gl.enableVertexAttribArray(texcoor);
         }
@@ -188,8 +188,8 @@ export let main_shader_program, simple_shader_program;
     simple_shader_program = new shader_program();
     await simple_shader_program.init(
         async function () {
-            const vert_source_simple = await (await fetch("shaders/simple/vert.vs")).text();
-            const frag_source_simple = await (await fetch("shaders/simple/frag.vs")).text();
+            const vert_source_simple = await (await fetch('shaders/simple/vert.vs')).text();
+            const frag_source_simple = await (await fetch('shaders/simple/frag.vs')).text();
             this.shaderProgram = shaderProgramFromSource(vert_source_simple, frag_source_simple);
 
             this.renderOb = {
@@ -200,8 +200,8 @@ export let main_shader_program, simple_shader_program;
         function () {
             gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
-            gl.bindBuffer(gl.ARRAY_BUFFER,  this.buffers["vertex_buffer"])
-            const posAttribLoc = gl.getAttribLocation(this.shaderProgram, "position");
+            gl.bindBuffer(gl.ARRAY_BUFFER,  this.buffers['vertex_buffer'])
+            const posAttribLoc = gl.getAttribLocation(this.shaderProgram, 'position');
             gl.vertexAttribPointer(posAttribLoc, 2, gl.FLOAT, false, 0, 0);
             gl.enableVertexAttribArray(posAttribLoc);
         }

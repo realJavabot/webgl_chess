@@ -1,4 +1,4 @@
-import transformObject from "./transformObject.mjs";
+import transformObject from '/webgl_chess/js/transformObject.mjs';
 
 export default class Camera extends transformObject{
     constructor(xRotation,yRotation,radius){
