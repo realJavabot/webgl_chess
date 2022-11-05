@@ -4,7 +4,7 @@ import {IP, PORT} from '/webgl_chess/js/constants.mjs';
 let socket;
 
 export function setupNetworking(){
-    socket = new WebSocket(`ws://${IP}:${PORT}/`);
+    socket = new WebSocket(`wss://${IP}:${PORT}/`);
     socket.addEventListener('message', ({data}) => {
         const event = JSON.parse(data);
         console.log(event);
