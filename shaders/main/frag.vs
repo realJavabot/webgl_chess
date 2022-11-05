@@ -24,37 +24,40 @@ void main(void) {
     }
     
     vec3 ambient;
-    vec3 specular = vec3(1.,1.,1.) * .5 
+    vec3 light = vec3(0.,10.,0.);
+    vec3 specular = clamp(vec3(1.,1.,1.) * .5 
     * pow(
         dot(
             reflect(
                 normalize(
-                    vPos-vec3(20.,20.,20.)
+                    vPos-light
                 ),
                 vNormal
-            ),
+            )/1.2,
             normalize(
                 vPos - (matrix*vec4(0.,-20.,0.,1.)).xyz
             )
         ),
-    5.);
-    vec3 diffuse = vec3(clamp(dot( vec3(20.,20.,20.), vNormal), 0., 1.));
-    vec3 shadows = vec3(clamp(dot(-vec3(20.,20.,20.) - vec3(10.), vNormal), 0., 10.))/10.;
+    5.), 0., 1.);
+    vec3 diffuse = vec3(clamp(dot( light, vNormal), 0., 1.));
+    vec3 shadows = vec3(clamp(pow(clamp(dot(-light, vNormal) / 15., 0., 10.),2.), 0., 10.));
 
     if(TexIndex == 0){ // board
+        specular /= 3.;
         ambient = vec3(0.,0.,0.05) + vec3(texture2D(uChessTex, vTextureCoord).xyz * .1);
-        diffuse *= vec3(texture2D(uChessTex, vTextureCoord)) * .5;
+        diffuse *= vec3(texture2D(uChessTex, vTextureCoord)) * .7;
     }
     if(TexIndex == 1){ // white
-        ambient = vec3(0) / 2.;
-        diffuse = vec3(.9,.9,.1) * .75;
-        diffuse -= shadows*.6*vec3(.9,.9,.1);
-        specular *= 1.3;
-        //diffuse += + vec3(vPos.zzz,0) / 20.;
+        ambient = vec3(250.,219.,100.)/(255. *3.);
+        diffuse *= vec3(.5,.5,.5);
+        diffuse -= shadows*diffuse;
+        specular *= .8;
     }
     if(TexIndex == 2){ // black
         ambient = vec3(-.01,-.01,-.01);
         diffuse *= vec3(0.1,0.1,0.1);
+        diffuse -= shadows*diffuse;
+        specular *= 1.3;
     }
     gl_FragColor = vec4(ambient + diffuse + specular,1.);
 

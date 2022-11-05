@@ -5,7 +5,7 @@ import { meshes } from "./mesh.mjs";
 import UI from "./ui.mjs";
 import { init_shaders, main_shader_program, simple_shader_program } from "./shaders.mjs";
 
-export {setup, update, clickMeshes, rb, mouse, inputBuffer, gameUI, main_shader_program};
+export {setup, update, clickMeshes, rb, mouse, inputBuffer, gameUI, main_shader_program, camera};
 
 const mouse = {
    states: {
@@ -22,6 +22,7 @@ export let canvas;
 let inputBuffer;
 export let gl;
 let gameUI;
+export let singleplayer = false;
 
 
 
@@ -212,7 +213,13 @@ function clickMeshes(e){
    return meshes.find(e=>e.index == index);
 }
 
+export function singleplayer_false(){
+   singleplayer = false;
+}
 
+export function demoRoom(){
+   singleplayer = true;
+}
 
 
 

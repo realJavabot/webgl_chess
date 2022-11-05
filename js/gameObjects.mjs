@@ -1,5 +1,5 @@
-import { mesh } from "./mesh.mjs";
-import { geo, geoParams } from "./geometry.mjs";
+import { mesh, meshes } from "./mesh.mjs";
+import { geo, geoParams, geos } from "./geometry.mjs";
 import { Tween, Bezier, Path } from "./animation.mjs";
 import * as vecMath from "./math.mjs";
 import { gameUI } from "./gameengine.mjs";
@@ -160,7 +160,7 @@ class piece{
    game_input = false;
  }
 
- class move{
+ export class move{
     constructor(piece, pos, attacking, to){
       this.to = to;
       this.pos = pos;
@@ -401,4 +401,51 @@ function moveLocal(p,x,y){
     pieces.forEach(p=>{
        new piece(p.type, "white", p.pos[0], (p.pos[1])?6:7);
     });
+ }
+
+ function generateBoardGeo(){
+   const dim = 4;
+   const diff = dim + .05;
+   const offset = -1.2;
+   const planeParams = new geoParams();
+
+   let coords = [
+      [-dim,-1,-dim, -diff,offset,-diff, dim,-1,-dim, diff,offset,-diff],
+      [dim,-1,-dim, diff,offset,-diff, dim,-1,dim, diff,offset,diff],
+      [dim,-1,dim, diff,offset,diff, -dim,-1,dim, -diff,offset,diff],
+      [-dim,-1,dim, -diff,offset,diff, -dim,-1,-dim, -diff,offset,-diff]
+   ];
+
+   for(let i=0; i<4; i++){
+      let j = i*4;
+      planeParams.vertices.push(...coords[i]);
+      planeParams.normals.push(0,1,0, 0,1,0, 0,1,0, 0,1,0);
+      planeParams.indices.push(j,j+1,j+2, j+1,j+2,j+3);
+      planeParams.texcoors.push(0,0, 0,0, 0,0, 0,0);
+   }
+
+   const planeGeo = new geo("board_back", planeParams);
+ }
+
+ export function generateBoard(){
+   if(geos["board_back"] === undefined){
+      generateBoardGeo();
+   }
+   for(var i=0; i<8; i++){
+      for(var j=0; j<8; j++){
+         new square(i,j);
+      }
+   }
+   const planeMesh = new mesh("board_back");
+   planeMesh.setTexIndex(2);
+ }
+
+ export function resetBoard(){
+   taken.length = 0;
+   pieces.length = 0;
+   meshes.length = 0;
+   squares.length = 0;
+   squares.push([]);
+   generateBoard();
+   spawnPieces();
  }

@@ -1,25 +1,99 @@
 <!doctype html>
 <html>
    <head>
+      <link rel="stylesheet" href="./css/overlay.css">
       <style>
          body{
             background-color:black;
          }
-         canvas{
+         #container{
             margin: auto;
-            display:block;
+            display:flex;
+            width:1000px;
+            height:600px;
+            justify-content: center;
+         }
+         #overlay{
+            /* display: none; */
+         }
+         .top_left{
+            position:absolute;
+            top:0;
+            left:0;
+            padding:20px;
+            color:white;
+            font-size: 25px;
+            display:none;
+         }
+         .top_right{
+            position:absolute;
+            top:0;
+            right:0;
+            padding:20px;
+            color:white;
+            font-size: 25px;
+            display:none;
+         }
+         .bottom_center{
+            text-align: center;
+            font-size: 25px;
+            color: rgb(207, 207, 207);
+            position:absolute;
+            bottom: 0px;
+            padding:10px 0 20px 0;
+            width:99%;
+            background-color: black;
+         }
+         a{
+            color:blueviolet;
          }
       </style>
    </head>
    <body>
-      <canvas width = "1000" height = "600" id = "my_Canvas"></canvas>
+      <div id="container">
+         <canvas width = "800" height = "600" id = "my_Canvas"></canvas>
+         <div id="overlay">
+            <div class="menu" id="menu_play" style="left:400px;">
+               <button id="btn_play">PLAY</button>
+            </div>
+            <div class="menu" id="menu_decide_game">
+               <button id="btn_new">NEW GAME</button>
+               <button id="btn_connect">CONNECT TO GAME</button>
+               <button id="btn_demo">DEMO</button>
+            </div>
+            <div class="menu" id="menu_new_game">
+               <label class="switch">
+                  <input type="checkbox" id="checkbox_color">
+                  <div class="in"><span>BLACK</span></div>
+                  <div class="out"><span>WHITE</span></div>
+               </label>
+               <button id="btn_gen_room">CREATE ROOM</button>
+            </div>
+            <div class="menu" id="menu_join_game">
+               <input type="text" place2holder="ROOM ID" id="inp_room_id">
+               <button id="btn_join_room">JOIN</button>
+            </div>
+         </div>
+         <div class="top_left" id="room_id">
+            Room ID:
+         </div>
+         <div class="top_right" id="exit">
+            <button id="btn_exit" class="btn_back">exit</button>
+         </div>
+         <div class="top_middle" id="error_alert"></div>
+      </div>
+      <div class="bottom_center">
+         Michael Tchistopolskii, 2022 - <a href='https://github.com/realJavabot/webgl_chess'>https://github.com/realJavabot/webgl_chess</a>
+      </div>
       <script type="module">
          import * as vecMath from './js/math.mjs';
          import { loadGeometry, geo, geoParams } from "./js/geometry.mjs";
          import { mesh } from "./js/mesh.mjs";
-         import { setup, clickMeshes, mouse } from "./js/gameengine.mjs";
+         import { setup, clickMeshes, mouse, singleplayer } from "./js/gameengine.mjs";
          import { main_shader_program } from "./js/shaders.mjs";
-         import { pieces, square, squares, spawnPieces, taken, game_input } from "./js/gameObjects.mjs";
+         import { pieces, square, squares, spawnPieces, taken, game_input, resetBoard } from "./js/gameObjects.mjs";
+         import { setupOverlay } from "./js/overlay.mjs";
+         import { setupNetworking, movePiece } from './js/network.mjs';
 
          window.onload = () =>{
             setup(async () => {
@@ -34,38 +108,11 @@
                ];
 
                return Promise.all(loadCalls).then(()=>{
-                  for(var i=0; i<8; i++){
-                     for(var j=0; j<8; j++){
-                        new square(i,j);
-                     }
-                  }
+                  resetBoard();
 
-                  // generate board edges 
-                  const dim = 4;
-                  const diff = dim + .05;
-                  const offset = -1.2;
-                  const planeParams = new geoParams();
+                  setupNetworking();
 
-                  let coords = [
-                     [-dim,-1,-dim, -diff,offset,-diff, dim,-1,-dim, diff,offset,-diff],
-                     [dim,-1,-dim, diff,offset,-diff, dim,-1,dim, diff,offset,diff],
-                     [dim,-1,dim, diff,offset,diff, -dim,-1,dim, -diff,offset,diff],
-                     [-dim,-1,dim, -diff,offset,diff, -dim,-1,-dim, -diff,offset,-diff]
-                  ];
-
-                  for(let i=0; i<4; i++){
-                     let j = i*4;
-                     planeParams.vertices.push(...coords[i]);
-                     planeParams.normals.push(0,1,0, 0,1,0, 0,1,0, 0,1,0);
-                     planeParams.indices.push(j,j+1,j+2, j+1,j+2,j+3);
-                     planeParams.texcoors.push(0,0, 0,0, 0,0, 0,0);
-                  }
-
-                  const planeGeo = new geo("board_back", planeParams);
-                  const planeMesh = new mesh("board_back");
-                  planeMesh.setTexIndex(2);
-
-                  spawnPieces();
+                  setupOverlay();
                });
             }, () => {
                pieces.forEach(piece=>{piece.update();});
@@ -104,10 +151,15 @@
                      }else if(clickedMesh.texindex == 4){
                         pieces.forEach(p=>{p.enpassant = false;})
 
-                        availableMoves.find(move => 
+                        const performed_move = availableMoves.find(move => 
                               vecMath.same2D(...clickedMesh.ob.pos, ...move.pos)
                            || move.attacking == clickedMesh.ob
-                           ).perform();
+                           );
+                        if(singleplayer){
+                           performed_move.perform();
+                        }else{
+                           movePiece(performed_move.piece.pos, performed_move.pos);
+                        }
 
                         selected = 0;
                         availableMoves = [];

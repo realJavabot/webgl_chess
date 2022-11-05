@@ -3,12 +3,12 @@ precision mediump float;
 uniform sampler2D uChessTex;
 uniform vec4 baseColor;
 uniform vec4 hoverColor;
+uniform int TexIndex;
 
 varying mat4 matrix;
 varying vec3 vNormal;
 varying highp vec2 vTextureCoord;
 varying vec3 vPos;
-varying float TexIndex;
 
 
 void main(void) {
