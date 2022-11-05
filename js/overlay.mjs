@@ -1,11 +1,11 @@
-import {generateRoom, joinRoom, exitRoom} from './network.mjs';
-import {demoRoom, singleplayer} from './gameengine.mjs';
+import {generateRoom, joinRoom, exitRoom} from '/webgl_chess/js/network.mjs';
+import {demoRoom, singleplayer} from '/webgl_chess/js/gameengine.mjs';
 
-const MIDDLE_POS = "400px";
-const LEFT_POS = "-800px";
-const RIGHT_POS = "1200px";
+const MIDDLE_POS = '400px';
+const LEFT_POS = '-800px';
+const RIGHT_POS = '1200px';
 
-const menu_stack = ["menu_play"];
+const menu_stack = ['menu_play'];
 
 function last_el(arr){
     return arr[arr.length-1];
@@ -24,46 +24,46 @@ function pop_menu(){
 }
 
 export function setupOverlay(){
-    [].slice.call(document.getElementsByClassName("menu"))
-        .filter(m=>m.id != "menu_play")
+    [].slice.call(document.getElementsByClassName('menu'))
+        .filter(m=>m.id != 'menu_play')
         .forEach(menu => {
-            let back_btn = document.createElement("button");
-            back_btn.innerHTML = "BACK";
-            back_btn.className = "btn_back";
+            let back_btn = document.createElement('button');
+            back_btn.innerHTML = 'BACK';
+            back_btn.className = 'btn_back';
             back_btn.onclick = pop_menu;
             menu.appendChild(back_btn);
         });
         
-    document.getElementById("btn_play").addEventListener('click', (ev)=>{
-        push_menu("menu_decide_game", MIDDLE_POS);
+    document.getElementById('btn_play').addEventListener('click', (ev)=>{
+        push_menu('menu_decide_game', MIDDLE_POS);
     });
 
-    document.getElementById("btn_new").addEventListener('click', (ev)=>{
-        push_menu("menu_new_game", MIDDLE_POS);
+    document.getElementById('btn_new').addEventListener('click', (ev)=>{
+        push_menu('menu_new_game', MIDDLE_POS);
     });
 
-    document.getElementById("btn_connect").addEventListener('click', (ev)=>{
-        push_menu("menu_join_game", MIDDLE_POS);
+    document.getElementById('btn_connect').addEventListener('click', (ev)=>{
+        push_menu('menu_join_game', MIDDLE_POS);
     });
 
-    document.getElementById("btn_gen_room").addEventListener('click', (ev)=>{
-        generateRoom((document.getElementById("checkbox_color").checked)? "white" : "black");
+    document.getElementById('btn_gen_room').addEventListener('click', (ev)=>{
+        generateRoom((document.getElementById('checkbox_color').checked)? 'white' : 'black');
     });
 
-    document.getElementById("btn_join_room").addEventListener('click', (ev)=>{
-        joinRoom(document.getElementById("inp_room_id").value);
+    document.getElementById('btn_join_room').addEventListener('click', (ev)=>{
+        joinRoom(document.getElementById('inp_room_id').value);
     });
 
-    document.getElementById("btn_demo").addEventListener('click', (ev)=>{
-        document.getElementById("overlay").style.display = "none";
-        document.getElementById("exit").style.display = "block";
+    document.getElementById('btn_demo').addEventListener('click', (ev)=>{
+        document.getElementById('overlay').style.display = 'none';
+        document.getElementById('exit').style.display = 'block';
         demoRoom();
     });
 
-    document.getElementById("btn_exit").addEventListener('click', (ev)=>{
-        document.getElementById("overlay").style.display = "flex";
-        document.getElementById("room_id").style.display = "none";
-        document.getElementById("exit").style.display = "none";
+    document.getElementById('btn_exit').addEventListener('click', (ev)=>{
+        document.getElementById('overlay').style.display = 'flex';
+        document.getElementById('room_id').style.display = 'none';
+        document.getElementById('exit').style.display = 'none';
         exitRoom();
     });
 }

@@ -1,4 +1,4 @@
-import * as vecMath from './math.mjs';
+import * as vecMath from '/webgl_chess/js/math.mjs';
 export {tweens, Tween, Bezier, Path};
 
 let tweens = [];
@@ -56,7 +56,7 @@ class Bezier{
             this.points.push(points.slice(i,i+3));
         }
         if(this.points.length != 4){
-            console.log("not enough points!");
+            console.log('not enough points!');
             this.points = [];
         }else{
             this.end = this.points[this.points.length-1];

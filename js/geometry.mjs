@@ -1,4 +1,4 @@
-import * as vecMath from './math.mjs';
+import * as vecMath from '/webgl_chess/js/math.mjs';
 export {geo, geoParams, geos, loadGeometry};
 
 const geos = {};
@@ -47,33 +47,33 @@ class geo{
    const tn = [];
    const tt = [];
    const obParams = new geoParams();
-   const text = await (await fetch(path).then(response => response.text())).split("\n");
+   const text = await (await fetch(path).then(response => response.text())).split('\n');
     
    return new Promise((resolve, reject)=>{
       text.forEach(line=>{
-         line = line.split(" ");
-         if(line[0] == "v"){
+         line = line.split(' ');
+         if(line[0] == 'v'){
             obParams.vertices.push(
                parseFloat(line[1]),
                parseFloat(line[2]),
                parseFloat(line[3]));
          }
-         if(line[0] == "vn"){
+         if(line[0] == 'vn'){
             tn.push(
                [parseFloat(line[1]),
                parseFloat(line[2]),
                parseFloat(line[3])]);
          }
-         if(line[0] == "vt"){
+         if(line[0] == 'vt'){
             tt.push(
                [parseFloat(line[1]),
                parseFloat(line[2])]);
          }
-         if(line[0] == "f"){
+         if(line[0] == 'f'){
             line.splice(0,1);
             const points = [];
             line.forEach(group=>{
-               group = group.split("/");
+               group = group.split('/');
                const point = parseInt(group[0]) - 1;
                points.push(point);
                obParams.normals[point*3] = tn[parseInt(group[2])-1][0];

@@ -59,14 +59,14 @@ async def join_room(websocket, room_id):
     room = rooms[room_id]
 
     send_message = lambda c : room[c].send(json.dumps({'type': 'message', 'message': 'Opponent has joined'}))
-    color = ""
+    color = ''
     if room[Color.BLACK] == None:
         room[Color.BLACK] = websocket
-        color = "black"
+        color = 'black'
         await send_message(Color.WHITE)
     else:
         room[Color.WHITE] = websocket
-        color = "white"
+        color = 'white'
         await send_message(Color.BLACK)
     
     return {'type': 'gen_room_finish', 'value': room_id, 'color': color}
@@ -77,14 +77,14 @@ async def send_move(websocket, move):
         players = [room[Color.BLACK], room[Color.WHITE]]
         if websocket in players:
             if None in players:
-                await websocket.send(json.dumps(error("Wait for the other player to connect!")))
+                await websocket.send(json.dumps(error('Wait for the other player to connect!')))
                 return
 
             player_color = Color.WHITE if room[Color.WHITE] == websocket else Color.BLACK
             if room['turn'] != player_color:
-                await websocket.send(json.dumps(error("Not your turn")))    
+                await websocket.send(json.dumps(error('Not your turn')))    
             elif room['state'][move['from'][1]][move['from'][0]] != player_color:
-                await websocket.send(json.dumps(error("Not your color piece")))    
+                await websocket.send(json.dumps(error('Not your color piece')))    
             else:
                 room['turn'] = Color.WHITE if room['turn'] == Color.BLACK else Color.BLACK
                 room['state'][move['from'][1]][move['from'][0]] = None
@@ -109,7 +109,7 @@ async def player_disconnected(websocket):
                 try:
                     await p.send(json.dumps(error('opponent disconnected')))
                 except:
-                    print("disconnected")
+                    print('disconnected')
             break
 
 async def handler(websocket):

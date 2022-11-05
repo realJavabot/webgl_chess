@@ -1,4 +1,4 @@
-import {gl} from "./gameengine.mjs";
+import {gl} from '/webgl_chess/js/gameengine.mjs';
 export {newBlankColorTex};
 
  function newBlankColorTex(width, height){
