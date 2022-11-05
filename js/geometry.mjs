@@ -42,7 +42,7 @@ class geo{
  }
 
  async function loadGeometry(path, name){
-   path = `/resources/${path}`;
+   path = `/webgl_chess/resources/${path}`;
 
    const tn = [];
    const tt = [];
