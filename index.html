@@ -104,7 +104,7 @@
                   loadGeometry('models/king.obj', 'king'),
                   loadGeometry('models/bishop.obj', 'bishop'),
                   loadGeometry('models/queen.obj', 'queen'),
-                  main_shader_program.loadImageIntoSampler('./chesstex.jpg', 'uChessTex')
+                  main_shader_program.loadImageIntoSampler('/webgl_chess/chesstex.jpg', 'uChessTex')
                ];
 
                return Promise.all(loadCalls).then(()=>{
